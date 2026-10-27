@@ -1,69 +1,147 @@
 # UMST — Ultimate Mac Scheduling Tool
 
-A lightweight macOS menu bar app that puts your schedule and your most-used links one click away.
+**A free, open-source desktop calendar and menu bar app for macOS.** See Google Calendar, iCloud, Outlook and Canvas LMS deadlines in one glass widget on your desktop, add to-dos in two keystrokes, open your most-used sites from the menu bar, and clear your screen with a one-click Show Desktop.
 
-- **Desktop calendar.** A glass calendar widget that lives on your desktop, below your windows. It shows the next two weeks from every calendar you connect and stays visible when you use Show Desktop.
-- **Quick add.** Click the calendar icon in the menu bar, type, press Return. Items land on today by default and clear themselves at midnight; pick another day with one click.
-- **Quick Links.** A compact menu of the sites and apps you use most, grouped into Personal, School and Work, each opening in the right Chrome profile.
-- **Show Desktop.** One click hides every app, a second click brings everything back exactly as it was.
-- **Themes and animations.** Six themes (Glass, Midnight, Sunset, Forest, Lavender, Graphite) and smooth transitions that can be turned off in Settings.
+![UMST desktop calendar in Glass, Midnight, Sunset and Lavender themes](docs/images/themes.png)
 
-## Requirements
-
-- macOS 14 Sonoma or later
-- Xcode Command Line Tools (`xcode-select --install`)
-- Google Chrome (for Quick Links)
+[![macOS 14+](https://img.shields.io/badge/macOS-14%2B-black?logo=apple)](#requirements)
+[![Swift](https://img.shields.io/badge/Swift-SwiftUI-orange?logo=swift)](Sources/UMST)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
+[![Latest release](https://img.shields.io/github/v/release/nicoleyangcoding/UMST-UltimateMacSchedulingTool)](https://github.com/nicoleyangcoding/UMST-UltimateMacSchedulingTool/releases/latest)
 
 ## Install
+
+Paste this into Terminal:
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/nicoleyangcoding/UMST-UltimateMacSchedulingTool/main/install.sh | zsh
+```
+
+It downloads the latest release, checks its SHA-256 checksum, installs `UMST.app` to `~/Applications` and opens it. Run the same command again to update.
+
+<details>
+<summary>Other ways to install</summary>
+
+**Download.** Get `UMST.zip` from the [latest release](https://github.com/nicoleyangcoding/UMST-UltimateMacSchedulingTool/releases/latest), unzip it and move `UMST.app` to Applications. UMST isn't notarized by Apple yet, so the first time you open it macOS will block it: go to **System Settings → Privacy & Security** and click **Open Anyway**.
+
+**Build from source.** Requires the Xcode Command Line Tools (`xcode-select --install`).
 
 ```sh
 git clone https://github.com/nicoleyangcoding/UMST-UltimateMacSchedulingTool.git
 cd UMST-UltimateMacSchedulingTool
-./scripts/install.sh
+./scripts/install-from-source.sh
 ```
+</details>
 
-This builds `UMST.app`, copies it to `~/Applications`, adds it as a login item and starts it. On first launch macOS asks for calendar access, and the first time you use Show Desktop it asks to let UMST control System Events.
+## Features
+
+**Desktop calendar**
+- A calendar widget that sits on your desktop, under your windows, showing the next two weeks.
+- Pulls from every calendar on your Mac (Google / Gmail, iCloud, Exchange, Outlook), plus Canvas, school portals and any iCal feed.
+- Stays visible when you use Show Desktop. Drag it anywhere; it remembers where you put it.
+- Tap a day in the week strip to jump to it. Hover a to-do to check it off.
+
+**Quick add**
+- Click the calendar-plus icon in the menu bar, type, press Return.
+- Items go on today by default and disappear at midnight. Pick Tomorrow or any date with one click.
+
+**Quick Links**
+- A compact menu of the sites and apps you use most, grouped into Personal, School and Work.
+- Each link can open in a specific Chrome profile, so school links open signed in to your school account and work links to your work account.
+- **Add Link…** adds a site in one step. Optional Desktop folders with one-click launchers for every link.
+
+**Show Desktop**
+- One click hides every app; a second click brings everything back exactly as it was, tabs and all.
+
+**Themes and animations**
+- Six themes: Glass, Midnight, Sunset, Forest, Lavender and Graphite.
+- Smooth, subtle animations you can turn off. Reduce Motion is respected automatically.
+
+<p align="center">
+  <img src="docs/images/settings-accounts.png" width="380" alt="UMST account settings">
+  <img src="docs/images/settings-appearance.png" width="380" alt="UMST appearance settings">
+</p>
 
 ## Connecting calendars
 
-Open **Settings → Accounts** from the calendar's `•••` menu or the Quick Links menu.
+Open **Settings → Accounts** from the widget's `•••` menu, the person icon on the widget, or the Quick Links menu.
 
-| Source | How |
+| Calendar | How to connect |
 | --- | --- |
-| Google / Gmail, iCloud, Exchange | Add the account in **System Settings → Internet Accounts** and turn on Calendars. UMST reads it through macOS Calendar, so meeting invites and events Mail finds show up automatically. Individual calendars can be hidden in Settings. |
-| Canvas | Canvas → Calendar → **Calendar Feed**, paste the link under **Add Feed**. Or use a Canvas access token for the planner API. |
-| Anything else | Any `https://` or `webcal://` iCalendar link (Google's secret iCal address, Outlook, school portals). |
+| Google Calendar / Gmail | Add the account in **System Settings → Internet Accounts** with Calendars turned on. Meeting invites, Zoom links and events Mail finds appear automatically. |
+| iCloud, Exchange, Outlook 365 | Same as above. Each calendar can be shown or hidden in Settings. |
+| Canvas LMS | In Canvas open **Calendar → Calendar Feed**, copy the link and paste it into **Add Feed**. Or use a Canvas access token for the planner API. |
+| Anything with an iCal / `.ics` / `webcal://` link | Paste it into **Add Feed** (Google's secret iCal address, Outlook published calendars, sports schedules, school portals). |
 
-Calendars refresh at login, at midnight, when the Mac wakes, whenever macOS Calendar changes, and on demand with the refresh button.
+The calendar refreshes when you log in, at midnight, when your Mac wakes, the moment macOS Calendar changes, and whenever you click refresh.
 
-## Quick Links
+## How it compares
 
-Links are read from `~/Library/Application Support/UMST/links.json` (see `config/links.example.json`). Each item has a `name` and either a `url` plus Chrome `profile` (`Default`, `Profile 1`, …) or an `app` name from `/Applications`.
+| | UMST | Itsycal | macOS Calendar widget | Fantastical | CourseWatch |
+| --- | :-: | :-: | :-: | :-: | :-: |
+| Free and open source | ✓ | ✓ | – | – | ✓ |
+| Calendar on the desktop | ✓ | – | ✓ | ✓ | – |
+| Menu bar quick add | ✓ | – | – | ✓ | ✓ |
+| Canvas deadlines built in | ✓ | – | – | – | ✓ |
+| Any iCal feed without subscribing in Calendar | ✓ | – | – | – | – |
+| Quick Links per Chrome profile | ✓ | – | – | – | – |
+| One-click Show Desktop | ✓ | – | – | – | – |
+| Themes | ✓ | – | – | ✓ | – |
 
-Use **Add Link…** in the menu to add a site without editing the file. Plain names are saved to `requests.json` as pending requests.
+UMST is built for students and anyone juggling school, work and personal calendars who wants everything in one glance, without a subscription.
 
-Desktop folders with one-click launchers for every link can be generated with:
+## Privacy and security
+
+- No accounts, no analytics, no servers. UMST only talks to the calendars and sites you add.
+- Feed links and API tokens live in your macOS Keychain, never in plain files.
+- HTTPS only, ephemeral network sessions (no cookies or cache on disk) and size-limited downloads.
+- Data files are readable only by your user account. The app runs with the hardened runtime.
+
+Details are in [SECURITY.md](SECURITY.md).
+
+## Requirements
+
+- macOS 14 Sonoma or later, Apple silicon or Intel
+- Google Chrome is optional (only for opening links in specific Chrome profiles; otherwise your default browser is used)
+
+## Uninstall
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/nicoleyangcoding/UMST-UltimateMacSchedulingTool/main/scripts/uninstall.sh | zsh
+```
+
+This removes the app, its settings, its data and its Keychain items.
+
+## Customizing Quick Links
+
+Links live in `~/Library/Application Support/UMST/links.json` (open it from **Edit Links…** in the menu). Each item has a `name` and either a `url` (optionally with a Chrome `profile` such as `Default` or `Profile 1`) or an `app` name from `/Applications`. See [`config/links.example.json`](config/links.example.json).
+
+To create Desktop folders with a launcher for every link:
 
 ```sh
 python3 ~/Applications/UMST.app/Contents/Resources/make_folders.py
 ```
 
-## Security
+## Development
 
-- Feed links and API tokens are stored in the macOS Keychain (this device only), never in plain files.
-- All network requests are HTTPS-only, use an ephemeral session (no cookies or cache on disk) and are size-limited.
-- Data files in `~/Library/Application Support/UMST` are readable only by your user account.
-- The app is built with the hardened runtime and only the calendar and Apple Events entitlements.
-- UMST has no analytics and talks to nothing except the calendars and sites you add.
-
-See [SECURITY.md](SECURITY.md) for details and how to report a problem.
-
-## Project layout
+```sh
+./scripts/test.sh                 # run the test suite
+./scripts/build.sh                # build build/UMST.app (universal)
+./scripts/install-from-source.sh  # build, install and launch
+./scripts/release.sh              # test, build and package dist/UMST.zip
+build/UMST.app/Contents/MacOS/UMST --demo   # run with sample data
+```
 
 ```
-Sources/UMST/      App source (AppKit + SwiftUI)
-Tools/             Icon and Desktop-launcher generators bundled into the app
-Resources/         Info.plist and entitlements
-config/            Example configuration
-scripts/           build.sh and install.sh
+Sources/UMST/   App source (AppKit + SwiftUI, no dependencies)
+Tests/          Parser, network allow-list and launcher tests
+Tools/          Icon and Desktop-launcher generators bundled into the app
+Resources/      Info.plist and entitlements
+scripts/        Build, test, install and release scripts
 ```
+
+Issues and pull requests are welcome.
+
+## License
+
+[MIT](LICENSE)

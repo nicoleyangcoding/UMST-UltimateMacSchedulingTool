@@ -15,7 +15,7 @@ enum SettingsWindow {
 
     static func show(_ tab: SettingsTab = .accounts) {
         if window == nil {
-            let w = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 520, height: 520),
+            let w = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 520, height: 580),
                              styleMask: [.titled, .closable, .miniaturizable, .fullSizeContentView],
                              backing: .buffered, defer: false)
             w.title = "UMST Settings"
@@ -63,8 +63,7 @@ struct SettingsView: View {
             }
             .transition(.opacity)
         }
-        .frame(width: 520, height: 520)
-        .tint(settings.theme.accent)
+        .frame(width: 520, height: 580)
     }
 }
 
@@ -104,6 +103,7 @@ struct AccountsTab: View {
                                             Circle().fill(Color(hex: c.color)).frame(width: 8, height: 8)
                                             Text(c.title).font(.system(size: 12.5)).lineLimit(1)
                                         }
+                                        .frame(maxWidth: .infinity, alignment: .leading)
                                     }
                                     .toggleStyle(.switch).controlSize(.mini)
                                 }
@@ -283,6 +283,16 @@ struct AppearanceTab: View {
                             Text("Smooth transitions in the calendar and menus. Turns off automatically with Reduce Motion.")
                                 .font(.system(size: 11)).foregroundStyle(.secondary)
                         }
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                    Divider()
+                    Toggle(isOn: $settings.openAtLogin) {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Open at login").font(.system(size: 12.5, weight: .medium))
+                            Text(settings.loginItemError ?? "Start UMST automatically when you log in.")
+                                .font(.system(size: 11)).foregroundStyle(settings.loginItemError == nil ? Color.secondary : Color.red)
+                        }
+                        .frame(maxWidth: .infinity, alignment: .leading)
                     }
                     Divider()
                     Toggle(isOn: $settings.showWidget) {
@@ -291,6 +301,7 @@ struct AppearanceTab: View {
                             Text("Drag the calendar to move it. It stays visible when you use Show Desktop.")
                                 .font(.system(size: 11)).foregroundStyle(.secondary)
                         }
+                        .frame(maxWidth: .infinity, alignment: .leading)
                     }
                 }
                 .toggleStyle(.switch)

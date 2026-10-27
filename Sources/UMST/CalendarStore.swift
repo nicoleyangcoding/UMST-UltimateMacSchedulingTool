@@ -78,17 +78,17 @@ final class CalendarStore: ObservableObject {
 
     @Published private(set) var events: [CalEvent] = []
     @Published private(set) var refreshing = false
-    @Published private(set) var lastRefresh: Date?
+    @Published fileprivate(set) var lastRefresh: Date?
     @Published private(set) var problem: String?
-    @Published private(set) var calendarAccess = EKEventStore.authorizationStatus(for: .event)
+    @Published fileprivate(set) var calendarAccess = EKEventStore.authorizationStatus(for: .event)
     @Published private(set) var today = Calendar.current.startOfDay(for: Date())
-    @Published private(set) var sources: [Source] = []
+    @Published fileprivate(set) var sources: [Source] = []
 
     var needsCalendarAccess: Bool { calendarAccess != .fullAccess }
     var isSetUp: Bool { !needsCalendarAccess || sources.contains { $0.type != "apple" } }
 
-    private var items: [LocalItem] = []
-    private var remote: [CalEvent] = []
+    fileprivate var items: [LocalItem] = []
+    fileprivate var remote: [CalEvent] = []
     private let ek = EKEventStore()
     private var midnightTimer: Timer?
     private var refreshAgain = false
@@ -98,6 +98,7 @@ final class CalendarStore: ObservableObject {
     private let cacheFile = calDir.appendingPathComponent("cache.json")
 
     func start() {
+        if isDemo { startDemo(); return }
         try? FileManager.default.createDirectory(at: calDir, withIntermediateDirectories: true)
         Safe.lockDown(supportDir, directory: true)
         Safe.lockDown(calDir, directory: true)
@@ -208,7 +209,8 @@ final class CalendarStore: ObservableObject {
     func addFeed(name: String, link: String, token: String?) async throws {
         guard let url = Safe.httpsURL(link) else { throw FeedError.badLink }
         let tok = token?.trimmingCharacters(in: .whitespacesAndNewlines)
-        var s = Source(name: name.trimmingCharacters(in: .whitespaces).isEmpty ? (url.host ?? "Calendar") : name,
+        let trimmed = String(name.trimmingCharacters(in: .whitespacesAndNewlines).prefix(40))
+        var s = Source(name: trimmed.isEmpty ? (url.host ?? "Calendar") : trimmed,
                        type: tok?.isEmpty == false ? "canvas" : "ics", host: url.host,
                        color: palette[sources.count % palette.count])
         if s.type == "canvas" {
@@ -234,6 +236,7 @@ final class CalendarStore: ObservableObject {
     }
 
     func deviceCalendars() -> [DeviceCalendar] {
+        if isDemo { return Demo.calendars }
         guard !needsCalendarAccess else { return [] }
         return ek.calendars(for: .event)
             .map { DeviceCalendar(id: $0.calendarIdentifier, title: $0.title, account: $0.source.title, color: hex($0.color)) }
@@ -259,6 +262,7 @@ final class CalendarStore: ObservableObject {
     }
 
     func refresh() {
+        guard !isDemo else { return }
         guard !refreshing else { refreshAgain = true; return }
         refreshing = true
         calendarAccess = EKEventStore.authorizationStatus(for: .event)
@@ -342,7 +346,7 @@ final class CalendarStore: ObservableObject {
 
     // MARK: Merge
 
-    private func merge() {
+    fileprivate func merge() {
         let local = items.map {
             CalEvent(id: $0.id.uuidString, title: $0.title, start: $0.day, end: nil, allDay: true,
                      source: "To-do", color: "#8E8E93", local: true)
@@ -361,7 +365,8 @@ final class CalendarStore: ObservableObject {
         return events.filter { e in
             if e.local { return e.start == day }
             if e.allDay { return e.start < next && (e.end ?? next) > day }
-            return (e.start >= day && e.start < next) || (e.start < day && (e.end ?? e.start) > day)
+            // Late-night events that spill a little past midnight stay on their own day
+            return (e.start >= day && e.start < next) || (e.start < day && (e.end ?? e.start) > day.addingTimeInterval(3 * 3600))
         }
     }
 
@@ -372,7 +377,55 @@ final class CalendarStore: ObservableObject {
     }
 
     private func save<T: Encodable>(_ v: T, _ url: URL) {
+        guard !isDemo else { return }
         if let d = try? JSONEncoder().encode(v) { Safe.write(d, to: url) }
+    }
+}
+
+// MARK: Demo mode (`UMST --demo`): sample data for screenshots; reads and writes nothing
+
+let isDemo = ProcessInfo.processInfo.arguments.contains("--demo")
+
+extension CalendarStore {
+    fileprivate func startDemo() {
+        sources = [Source(name: "Mac Calendars", type: "apple"),
+                   Source(name: "Canvas", type: "ics", host: "canvas.example.edu", color: "#E2412D")]
+        calendarAccess = .fullAccess
+        items = [LocalItem(title: "Pick up dry cleaning", day: today), LocalItem(title: "Call Mom", day: today)]
+        remote = Demo.events(today)
+        lastRefresh = Date()
+        merge()
+    }
+}
+
+enum Demo {
+    static let calendars = [
+        DeviceCalendar(id: "1", title: "Personal", account: "Gmail", color: "#0A84FF"),
+        DeviceCalendar(id: "2", title: "Work", account: "Gmail", color: "#30A46C"),
+        DeviceCalendar(id: "3", title: "Holidays", account: "iCloud", color: "#AF52DE"),
+    ]
+
+    static func events(_ today: Date) -> [CalEvent] {
+        let c = Calendar.current
+        func at(_ day: Int, _ h: Int, _ m: Int = 0) -> Date {
+            c.date(bySettingHour: h, minute: m, second: 0, of: c.date(byAdding: .day, value: day, to: today)!)!
+        }
+        let list: [(String, Date, Bool, String, String)] = [
+            ("Team standup", at(0, 9, 30), false, "Work", "#30A46C"),
+            ("Organic Chemistry lecture", at(0, 11), false, "Canvas", "#E2412D"),
+            ("Lunch with Sam", at(0, 12, 30), false, "Personal", "#0A84FF"),
+            ("Problem Set 6 due", at(0, 23, 59), false, "Canvas", "#E2412D"),
+            ("Design review (Zoom)", at(1, 14), false, "Work", "#30A46C"),
+            ("Lab report due", at(1, 23, 59), false, "Canvas", "#E2412D"),
+            ("Dentist", at(2, 10), false, "Personal", "#0A84FF"),
+            ("Midterm exam", at(3, 0), true, "Canvas", "#E2412D"),
+            ("Halloween", at(4, 0), true, "Holidays", "#AF52DE"),
+            ("1:1 with manager", at(6, 15), false, "Work", "#30A46C"),
+        ]
+        return list.enumerated().map { i, e in
+            CalEvent(id: "demo\(i)", title: e.0, start: e.1, end: e.2 ? c.date(byAdding: .day, value: 1, to: e.1) : e.1.addingTimeInterval(3600),
+                     allDay: e.2, source: e.3, color: e.4)
+        }
     }
 }
 

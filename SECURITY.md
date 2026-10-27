@@ -4,7 +4,7 @@
 
 | Data | Location | Protection |
 | --- | --- | --- |
-| Calendar feed links, Canvas tokens | macOS Keychain, service `com.umst.app.sources` | `AfterFirstUnlockThisDeviceOnly`; never synced or written to disk in plain text |
+| Calendar feed links, Canvas tokens | Your login Keychain, service `com.umst.app.sources` | Marked device-only and never synced; never written to disk in plain text |
 | Feed names and hosts, quick-add items, event cache | `~/Library/Application Support/UMST/calendar` | Directory `0700`, files `0600` |
 | Quick Links | `~/Library/Application Support/UMST/links.json` | `0600` |
 | Preferences (theme, animations) | `UserDefaults` (`com.umst.app`) | Not sensitive |

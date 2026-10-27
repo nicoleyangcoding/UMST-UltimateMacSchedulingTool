@@ -37,18 +37,20 @@ enum LinkAdder {
     }
 
     static func addNow(_ url: URL, group: String) {
-        guard let raw = try? Data(contentsOf: linksFile),
-              var groups = (try? JSONSerialization.jsonObject(with: raw)) as? [[String: Any]],
-              let gi = groups.firstIndex(where: { $0["group"] as? String == group }) else { return }
+        var groups = (try? Data(contentsOf: linksFile))
+            .flatMap { try? JSONSerialization.jsonObject(with: $0) as? [[String: Any]] } ?? []
+        if !groups.contains(where: { $0["group"] as? String == group }) { groups.append(["group": group, "items": []]) }
+        let gi = groups.firstIndex { $0["group"] as? String == group }!
         var items = groups[gi]["items"] as? [[String: Any]] ?? []
-        // Use the Chrome profile this group already uses most
+        // Use the Chrome profile this group already uses most; none means the default browser
         let profiles = items.compactMap { $0["profile"] as? String }
-        let profile = Dictionary(grouping: profiles, by: { $0 }).max { $0.value.count < $1.value.count }?.key ?? "Default"
+        let profile = Dictionary(grouping: profiles, by: { $0 }).max { $0.value.count < $1.value.count }?.key
         let account = items.first { $0["profile"] as? String == profile }?["account"] as? String
         let host = url.host!
         let parts = host.replacingOccurrences(of: "www.", with: "").split(separator: ".")
         let base = parts.count >= 2 ? parts[parts.count - 2] : parts.first ?? Substring(host)
-        var item: [String: Any] = ["name": base.prefix(1).uppercased() + base.dropFirst(), "profile": profile, "url": url.absoluteString]
+        var item: [String: Any] = ["name": base.prefix(1).uppercased() + base.dropFirst(), "url": url.absoluteString]
+        if let profile { item["profile"] = profile }
         if let account { item["account"] = account }
         items.append(item)
         groups[gi]["items"] = items
@@ -57,7 +59,9 @@ enum LinkAdder {
         }
         Task.detached(priority: .utility) {
             await fetchIcon(host: host)
-            runTool("make_folders.py")
+            // Desktop launchers are opt-in: only rebuild them if the user has generated them before
+            let desktop = FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("Desktop/\(group)")
+            runTool(FileManager.default.fileExists(atPath: desktop.path) ? "make_folders.py" : "make_icons")
             await MainActor.run { (NSApp.delegate as? AppDelegate)?.buildMenu() }
         }
     }

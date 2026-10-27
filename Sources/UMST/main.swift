@@ -28,6 +28,18 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     let restoreIcon = symbol("rectangle.on.rectangle.slash", "Bring Windows Back")
 
     func applicationDidFinishLaunching(_ n: Notification) {
+        // One copy at a time (login item + manual launch shouldn't double up)
+        let me = NSRunningApplication.current
+        if !isDemo, NSRunningApplication.runningApplications(withBundleIdentifier: Bundle.main.bundleIdentifier ?? "")
+            .contains(where: { $0 != me && !$0.isTerminated }) {
+            NSApp.terminate(nil)
+            return
+        }
+        if !isDemo {
+            seedLinksIfNeeded()
+            AppSettings.shared.applyLoginItem()
+        }
+
         linksItem.button?.image = symbol("square.grid.2x2", "Quick Links")
         linksItem.menu = menu
         desktopItem.button?.image = showIcon
@@ -47,6 +59,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         })
         CalendarStore.shared.start()
         widget = CalendarWidgetController { [weak self] in self?.toggleQuickAdd() }
+        if let dir = Snapshot.directory, let w = widget?.window { Snapshot.run(widget: w, to: dir) }
     }
 
     // Opens after the menu has closed, anchored to the Quick Links icon
@@ -172,7 +185,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         // Only web links, and only real Chrome profile folder names, ever reach Chrome's command line
         guard let raw = l.url, let url = URL(string: raw), ["https", "http"].contains(url.scheme?.lowercased() ?? ""),
               url.host != nil else { return }
-        let profile = l.profile ?? "Default"
+        guard let profile = l.profile, FileManager.default.fileExists(atPath: chromeURL.path) else {
+            NSWorkspace.shared.open(url)   // no profile set, or no Chrome: default browser
+            return
+        }
         guard profile.range(of: #"^(Default|Profile \d+)$"#, options: .regularExpression) != nil else { return }
         // A fresh Chrome instance hands the URL to the running one in the chosen profile, like `open -na`
         cfg.createsNewApplicationInstance = true
@@ -223,8 +239,34 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     @discardableResult func run(_ source: String) -> String? {
         var err: NSDictionary?
         let r = NSAppleScript(source: source)?.executeAndReturnError(&err)
-        if let err { NSLog("UMST: Show Desktop script failed (%@)", "\(err[NSAppleScript.errorNumber] ?? "?")") }
+        if let code = err?[NSAppleScript.errorNumber] as? Int {
+            NSLog("UMST: Show Desktop script failed (%d)", code)
+            if code == -1743 { showAutomationHelp() }   // user declined Automation access
+        }
         return r?.stringValue
+    }
+
+    private func showAutomationHelp() {
+        let a = NSAlert()
+        a.messageText = "Show Desktop needs permission"
+        a.informativeText = "Allow UMST to control System Events in System Settings → Privacy & Security → Automation, then try again."
+        a.addButton(withTitle: "Open Settings")
+        a.addButton(withTitle: "Cancel")
+        NSApp.activate(ignoringOtherApps: true)
+        if a.runModal() == .alertFirstButtonReturn,
+           let u = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Automation") {
+            NSWorkspace.shared.open(u)
+        }
+    }
+
+    /// First launch: start from the bundled example so the menu and Add Link work right away.
+    private func seedLinksIfNeeded() {
+        try? FileManager.default.createDirectory(at: supportDir, withIntermediateDirectories: true)
+        Safe.lockDown(supportDir, directory: true)
+        guard !FileManager.default.fileExists(atPath: linksFile.path),
+              let example = Bundle.main.url(forResource: "links.example", withExtension: "json"),
+              let data = try? Data(contentsOf: example) else { return }
+        Safe.write(data, to: linksFile)
     }
 }
 

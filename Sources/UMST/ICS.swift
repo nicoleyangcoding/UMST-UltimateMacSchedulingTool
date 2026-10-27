@@ -2,7 +2,7 @@ import Foundation
 
 /// Minimal iCalendar (RFC 5545) reader: VEVENT with SUMMARY, DTSTART, DTEND, UID and common RRULEs.
 enum ICS {
-    struct Ev { var uid = "", title = "", start = Date(), end: Date?, allDay = false }
+    struct Ev { var uid = "", title = "", start = Date(), end: Date?, allDay = false, cancelled = false, exdates: Set<Date> = [] }
 
     static func parse(_ text: String, from: Date, to: Date) -> [Ev] {
         let unfolded = text.replacingOccurrences(of: "\r\n ", with: "").replacingOccurrences(of: "\r\n\t", with: "")
@@ -12,9 +12,9 @@ enum ICS {
             let line = String(raw)
             if line == "BEGIN:VEVENT" { cur = Ev(); rrule = nil; hasStart = false; continue }
             if line == "END:VEVENT" {
-                if let e = cur, hasStart {
+                if let e = cur, hasStart, !e.cancelled {
                     if let r = rrule {
-                        for (s, en) in expand(e.start, e.end, r, from: from, to: to) {
+                        for (s, en) in expand(e.start, e.end, r, from: from, to: to) where !e.exdates.contains(s) {
                             var x = e; x.start = s; x.end = en; out.append(x)
                         }
                     } else if (e.end ?? e.start) >= from && e.start <= to { out.append(e) }
@@ -24,13 +24,16 @@ enum ICS {
             guard cur != nil, let colon = line.firstIndex(of: ":") else { continue }
             let head = line[..<colon], value = String(line[line.index(after: colon)...])
             let parts = head.split(separator: ";"), key = parts.first.map(String.init) ?? ""
-            let tzid = parts.first { $0.hasPrefix("TZID=") }.map { String($0.dropFirst(5)) }
+            let tzid = parts.first { $0.hasPrefix("TZID=") }.map { String($0.dropFirst(5)).trimmingCharacters(in: CharacterSet(charactersIn: "\"")) }
             switch key {
             case "UID": cur!.uid = value
             case "SUMMARY": cur!.title = unescape(value)
             case "DTSTART": if let (d, all) = date(value, tzid) { cur!.start = d; cur!.allDay = all; hasStart = true }
             case "DTEND": cur!.end = date(value, tzid)?.0
             case "RRULE": rrule = value
+            case "STATUS": cur!.cancelled = value.uppercased() == "CANCELLED"
+            case "EXDATE":
+                for v in value.split(separator: ",") { if let (d, _) = date(String(v), tzid) { cur!.exdates.insert(d) } }
             default: break
             }
         }

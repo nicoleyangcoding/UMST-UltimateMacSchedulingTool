@@ -1,3 +1,4 @@
+import ServiceManagement
 import SwiftUI
 
 struct Theme: Identifiable, Equatable {
@@ -38,11 +39,13 @@ struct Theme: Identifiable, Equatable {
 @MainActor
 final class AppSettings: ObservableObject {
     static let shared = AppSettings()
-    private let d = UserDefaults.standard
+    private let d = isDemo ? UserDefaults(suiteName: "com.umst.app.demo")! : .standard
 
     @Published var themeID: String { didSet { d.set(themeID, forKey: "theme") } }
     @Published var animations: Bool { didSet { d.set(animations, forKey: "animations") } }
     @Published var showWidget: Bool { didSet { d.set(showWidget, forKey: "showWidget"); onWidgetToggle?(showWidget) } }
+    @Published var openAtLogin: Bool { didSet { d.set(openAtLogin, forKey: "openAtLogin"); applyLoginItem() } }
+    @Published private(set) var loginItemError: String?
     @Published var hiddenCalendars: Set<String> {
         didSet { d.set(Array(hiddenCalendars), forKey: "hiddenCalendars"); CalendarStore.shared.refresh() }
     }
@@ -54,7 +57,19 @@ final class AppSettings: ObservableObject {
         themeID = d.string(forKey: "theme") ?? "glass"
         animations = d.object(forKey: "animations") as? Bool ?? true
         showWidget = d.object(forKey: "showWidget") as? Bool ?? true
+        openAtLogin = d.object(forKey: "openAtLogin") as? Bool ?? true
         hiddenCalendars = Set(d.stringArray(forKey: "hiddenCalendars") ?? [])
+    }
+
+    func applyLoginItem() {
+        let svc = SMAppService.mainApp
+        do {
+            if openAtLogin, svc.status != .enabled { try svc.register() }
+            if !openAtLogin, svc.status == .enabled { try svc.unregister() }
+            loginItemError = nil
+        } catch {
+            loginItemError = "Couldn't change this. Add UMST in System Settings → General → Login Items."
+        }
     }
 
     /// The animation to use, or nil when animations are off (also honors the system Reduce Motion setting)

@@ -21,6 +21,7 @@ final class CalendarWidgetController {
 
     init(onAdd: @escaping () -> Void) {
         let size = NSSize(width: 360, height: 440)
+        let autosave = isDemo ? "CalendarWidgetDemo" : "CalendarWidget"
         let w = WidgetWindow(contentRect: NSRect(origin: .zero, size: size), styleMask: [.borderless], backing: .buffered, defer: false)
         w.isOpaque = false
         w.backgroundColor = .clear
@@ -29,10 +30,10 @@ final class CalendarWidgetController {
         w.collectionBehavior = [.canJoinAllSpaces, .stationary, .ignoresCycle, .fullScreenNone]
         w.isMovableByWindowBackground = true
         w.contentView = FirstClickHostingView(rootView: CalendarWidget(onAdd: onAdd))
-        if !w.setFrameUsingName("CalendarWidget"), let s = NSScreen.main?.visibleFrame {
+        if !w.setFrameUsingName(autosave), let s = NSScreen.main?.visibleFrame {
             w.setFrameOrigin(NSPoint(x: s.midX - size.width / 2, y: s.midY - size.height / 2))
         }
-        w.setFrameAutosaveName("CalendarWidget")
+        w.setFrameAutosaveName(autosave)
         window = w
 
         let settings = AppSettings.shared
@@ -272,7 +273,12 @@ struct EventRow: View {
 
     private var timeLabel: String {
         if e.local { return "To-do" }
-        if e.allDay || e.start < day { return "All day" }
+        if e.allDay { return "All day" }
+        if e.start < day {   // continues from an earlier day
+            let next = Calendar.current.date(byAdding: .day, value: 1, to: day)!
+            if let end = e.end, end < next { return "→ " + end.formatted(.dateTime.hour().minute()) }
+            return "All day"
+        }
         return e.start.formatted(.dateTime.hour().minute())
     }
 }
