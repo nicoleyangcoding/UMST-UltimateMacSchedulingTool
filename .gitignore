@@ -1,0 +1,12 @@
+# Build output
+build/
+*.o
+*.dSYM
+
+# macOS
+.DS_Store
+
+# Personal configuration and calendar data never belong in the repo
+config/links.json
+*.ics
+.env
