@@ -130,6 +130,15 @@ scripts/        Build, test, install and release scripts
 
 Issues and pull requests are welcome.
 
+## Contributors
+
+<table>
+  <tr>
+    <td align="center"><a href="https://github.com/nicoleyangcoding"><img src="https://github.com/nicoleyangcoding.png?size=100" width="80" alt=""><br><sub><b>Nicole Yang</b></sub></a><br><sub>Creator</sub></td>
+    <td align="center"><a href="https://github.com/stanczykwyatt"><img src="https://github.com/stanczykwyatt.png?size=100" width="80" alt=""><br><sub><b>stanczykwyatt</b></sub></a><br><sub>Collaborator</sub></td>
+  </tr>
+</table>
+
 ## License
 
 [MIT](LICENSE)
