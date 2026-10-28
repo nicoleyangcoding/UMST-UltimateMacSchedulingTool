@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://nicoleyangcoding.github.io/UMST-UltimateMacSchedulingTool/sitemap.xml

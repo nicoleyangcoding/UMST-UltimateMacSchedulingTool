@@ -11,3 +11,4 @@ config/links.json
 *.ics
 .env
 dist/
+.claude/
