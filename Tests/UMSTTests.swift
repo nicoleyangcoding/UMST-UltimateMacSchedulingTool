@@ -91,6 +91,64 @@ do {
     expect(r.count == 4, "UNTIL is inclusive (\(r.count))")
 }
 
+// MARK: ICS – real-world feed quirks
+
+do {
+    let alarm = "BEGIN:VEVENT\r\nUID:20\r\nSUMMARY:Seminar\r\nDTSTART:\(stamp(tomorrowNoon))\r\nBEGIN:VALARM\r\nACTION:EMAIL\r\nSUMMARY:Alarm notification\r\nDTSTART:20000101T000000Z\r\nEND:VALARM\r\nEND:VEVENT\r\n"
+    let r = ICS.parse(ics(alarm), from: today, to: window)
+    expect(r.count == 1 && r.first?.title == "Seminar" && r.first?.start == tomorrowNoon, "VALARM fields don't overwrite the event")
+}
+
+do {
+    let moved = cal.date(byAdding: .hour, value: 3, to: cal.date(byAdding: .day, value: 1, to: tomorrowNoon)!)!
+    let second = cal.date(byAdding: .day, value: 1, to: tomorrowNoon)!
+    let third = cal.date(byAdding: .day, value: 2, to: tomorrowNoon)!
+    let feed = "BEGIN:VEVENT\r\nUID:21\r\nSUMMARY:Standup\r\nDTSTART:\(stamp(tomorrowNoon))\r\nRRULE:FREQ=DAILY;COUNT=3\r\nEND:VEVENT\r\n"
+        + "BEGIN:VEVENT\r\nUID:21\r\nRECURRENCE-ID:\(stamp(second))\r\nSUMMARY:Standup (moved)\r\nDTSTART:\(stamp(moved))\r\nEND:VEVENT\r\n"
+        + "BEGIN:VEVENT\r\nUID:21\r\nRECURRENCE-ID:\(stamp(third))\r\nSTATUS:CANCELLED\r\nSUMMARY:Standup\r\nDTSTART:\(stamp(third))\r\nEND:VEVENT\r\n"
+    let r = ICS.parse(ics(feed), from: today, to: window)
+    expect(r.count == 2, "moved occurrence replaces original, cancelled one disappears (\(r.count))")
+    expect(r.contains { $0.start == moved && $0.title == "Standup (moved)" } && !r.contains { $0.start == second }, "moved occurrence at its new time")
+}
+
+do {
+    let start = cal.date(byAdding: .day, value: -20, to: tomorrowNoon)!
+    let r = ICS.parse(ics("BEGIN:VEVENT\r\nUID:22\r\nSUMMARY:Weekdays\r\nDTSTART:\(stamp(start))\r\nRRULE:FREQ=DAILY;BYDAY=MO,TU,WE,TH,FR\r\nEND:VEVENT\r\n"), from: today, to: window)
+    expect(!r.isEmpty && r.allSatisfy { ![1, 7].contains(cal.component(.weekday, from: $0.start)) }, "daily BYDAY skips weekends")
+}
+
+do {
+    let r = ICS.parse(ics("BEGIN:VEVENT\r\nUID:23\r\nSUMMARY:Club\r\nDTSTART:20240109T180000Z\r\nRRULE:FREQ=MONTHLY;BYDAY=2TU\r\nEND:VEVENT\r\n"),
+                      from: Date(timeIntervalSince1970: 1_717_200_000), to: Date(timeIntervalSince1970: 1_735_600_000))   // Jun–Dec 2024
+    var utc = Calendar(identifier: .gregorian); utc.timeZone = TimeZone(identifier: "UTC")!
+    let ok = r.allSatisfy { utc.component(.weekday, from: $0.start) == 3 && (8...14).contains(utc.component(.day, from: $0.start)) }
+    expect(r.count == 7 && ok, "monthly BYDAY=2TU lands on the second Tuesday (\(r.count))")
+}
+
+do {
+    let r = ICS.parse(ics("BEGIN:VEVENT\r\nUID:24\r\nSUMMARY:Rent\r\nDTSTART;VALUE=DATE:20240131\r\nRRULE:FREQ=MONTHLY\r\nEND:VEVENT\r\n"),
+                      from: Date(timeIntervalSince1970: 1_704_067_200), to: Date(timeIntervalSince1970: 1_735_750_000))   // 2024
+    expect(r.allSatisfy { cal.component(.day, from: $0.start) == 31 } && r.count == 7, "monthly on the 31st skips short months (\(r.count))")
+}
+
+do {
+    let start = cal.date(byAdding: .year, value: -20, to: tomorrowNoon)!
+    let r = ICS.parse(ics("BEGIN:VEVENT\r\nUID:25\r\nSUMMARY:Ancient\r\nDTSTART:\(stamp(start))\r\nRRULE:FREQ=DAILY\r\nEND:VEVENT\r\n"), from: today, to: window)
+    expect(r.count >= 14, "series that started decades ago still shows (\(r.count))")
+}
+
+do {
+    let r = ICS.parse(ics("BEGIN:VEVENT\r\nUID:26\r\nSUMMARY:Sync\r\nDTSTART;TZID=Pacific Standard Time:20300105T090000\r\nEND:VEVENT\r\n"),
+                      from: Date(timeIntervalSince1970: 0), to: Date(timeIntervalSince1970: 4_102_444_800))
+    var la = Calendar(identifier: .gregorian); la.timeZone = TimeZone(identifier: "America/Los_Angeles")!
+    expect(r.first?.start == la.date(from: DateComponents(year: 2030, month: 1, day: 5, hour: 9)), "Windows time zone names understood")
+}
+
+do {
+    let lf = "BEGIN:VCALENDAR\nBEGIN:VEVENT\nuid:27\nsummary:Lower \\\\n ok\nDTSTART:\(stamp(tomorrowNoon))\nEND:VEVENT\nEND:VCALENDAR\n"
+    expect(ICS.parse(lf, from: today, to: window).first?.title == "Lower \\n ok", "LF line endings, lowercase names, escaped backslash")
+}
+
 // MARK: ICS – hostile input never crashes
 
 do {

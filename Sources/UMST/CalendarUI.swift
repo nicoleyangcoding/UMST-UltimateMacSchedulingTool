@@ -46,6 +46,14 @@ final class CalendarWidgetController {
                 }
             }
             .store(in: &bag)
+        // Unplugging a display can leave the widget off screen: bring it back to the main display
+        NotificationCenter.default.publisher(for: NSApplication.didChangeScreenParametersNotification)
+            .sink { _ in
+                guard !NSScreen.screens.contains(where: { $0.visibleFrame.intersects(w.frame) }),
+                      let s = NSScreen.main?.visibleFrame else { return }
+                w.setFrameOrigin(NSPoint(x: s.midX - w.frame.width / 2, y: s.midY - w.frame.height / 2))
+            }
+            .store(in: &bag)
         settings.onWidgetToggle = { [weak self] on in self?.setVisible(on) }
         setVisible(settings.showWidget)
     }

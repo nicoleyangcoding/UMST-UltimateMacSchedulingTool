@@ -1,4 +1,5 @@
 import AppKit
+import ServiceManagement
 import SwiftUI
 
 let supportDir = FileManager.default.homeDirectoryForCurrentUser
@@ -45,7 +46,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             mi.image = symbol(icon, nil)
             return mi
         }
-        menu.addItem(item("Add to Calendar…", #selector(toggleQuickAdd), "plus", "n"))
+        menu.addItem(item("Add to Calendar…", #selector(quickAddFromMenu), "plus", "n"))
         menu.addItem(item("Refresh", #selector(refresh), "arrow.clockwise", "r"))
         menu.addItem(.separator())
         menu.addItem(item("Accounts…", #selector(openAccounts), "person.crop.circle", ","))
@@ -67,6 +68,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
     }
 
+    // A transient popover opened while the menu is still closing would dismiss itself
+    @objc func quickAddFromMenu() { DispatchQueue.main.async { self.toggleQuickAdd() } }
+
     @objc func toggleQuickAdd() {
         if addPopover.isShown { addPopover.performClose(nil); return }
         guard let b = addItem.button else { return }
@@ -83,6 +87,12 @@ func symbol(_ name: String, _ desc: String?) -> NSImage? {
     let img = NSImage(systemSymbolName: name, accessibilityDescription: desc)
     img?.isTemplate = true
     return img
+}
+
+// Used by the uninstaller so no stale Login Items entry is left behind
+if CommandLine.arguments.contains("--unregister-login") {
+    try? SMAppService.mainApp.unregister()
+    exit(0)
 }
 
 MainActor.assumeIsolated {

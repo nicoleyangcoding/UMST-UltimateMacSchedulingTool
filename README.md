@@ -73,20 +73,16 @@ Open **Settings → Accounts** from the widget's `•••` menu, the person ic
 | Trello | The Calendar Power-Up's iCalendar feed link. |
 | Anything else with an iCal / `.ics` / `webcal://` link | Paste it into **Other calendar link**. |
 
-The calendar refreshes when you log in, at midnight, when your Mac wakes, the moment macOS Calendar changes, and whenever you click refresh.
+The calendar refreshes when you log in, about once an hour, at midnight, when your Mac wakes, the moment macOS Calendar or Reminders changes, and whenever you click refresh. If you go offline, it keeps showing what it last downloaded.
 
 ## How it compares
 
-| | UMST | Itsycal | macOS Calendar widget | Fantastical | CourseWatch |
-| --- | :-: | :-: | :-: | :-: | :-: |
-| Free and open source | ✓ | ✓ | – | – | ✓ |
-| Calendar on the desktop | ✓ | – | ✓ | ✓ | – |
-| Menu bar quick add | ✓ | – | – | ✓ | ✓ |
-| Reminders on the calendar | ✓ | – | – | ✓ | – |
-| Canvas, Blackboard, Brightspace, Moodle, Schoology | ✓ | – | – | – | Canvas |
-| Todoist, Asana, Trello | ✓ | – | – | Todoist | – |
-| Any iCal feed without subscribing in Calendar | ✓ | – | – | – | – |
-| Themes | ✓ | – | – | ✓ | – |
+| | UMST | Itsycal | macOS Calendar widget | Fantastical |
+| --- | :-: | :-: | :-: | :-: |
+| Free and open source | ✓ | ✓ | – | – |
+| Calendar on the desktop | ✓ | – | ✓ | ✓ |
+| Canvas, Blackboard, Brightspace, Moodle, Schoology built in | ✓ | – | – | – |
+| Todoist, Asana and Trello on the calendar | ✓ | – | – | Todoist |
 
 UMST is built for students and anyone juggling school, work and personal calendars who wants everything in one glance, without a subscription.
 
@@ -97,7 +93,7 @@ UMST is built for students and anyone juggling school, work and personal calenda
 - HTTPS only, ephemeral network sessions (no cookies or cache on disk) and size-limited downloads.
 - Data files are readable only by your user account. The app runs with the hardened runtime.
 
-Details are in [SECURITY.md](SECURITY.md).
+Details are in [PRIVACY.md](PRIVACY.md) and [SECURITY.md](SECURITY.md).
 
 ## Requirements
 
@@ -128,7 +124,7 @@ Resources/      Info.plist and entitlements
 scripts/        Build, test, install and release scripts
 ```
 
-Issues and pull requests are welcome.
+Issues and pull requests are welcome; see [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Contributors
 
@@ -141,4 +137,8 @@ Issues and pull requests are welcome.
 
 ## License
 
-[MIT](LICENSE)
+[MIT](LICENSE). UMST is provided "as is", without warranty of any kind.
+
+## Trademarks
+
+UMST is an independent open-source project. It is not affiliated with, endorsed by or sponsored by Apple, Google, Microsoft, Instructure (Canvas), Anthology (Blackboard), D2L (Brightspace), Moodle, PowerSchool (Schoology), Doist (Todoist), Asana, Atlassian (Trello), Flexibits (Fantastical) or any other company named here. All product names and trademarks belong to their owners and are used only to describe compatibility. The comparison table reflects publicly available information as of October 2026; corrections are welcome.

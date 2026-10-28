@@ -95,7 +95,9 @@ final class CalendarStore: ObservableObject {
     fileprivate var remote: [CalEvent] = []
     private let ek = EKEventStore()
     private var midnightTimer: Timer?
+    private var hourly: Timer?
     private var refreshAgain = false
+    private var pendingFull = false
 
     private let sourcesFile = calDir.appendingPathComponent("sources.json")
     private let itemsFile = calDir.appendingPathComponent("items.json")
@@ -123,11 +125,24 @@ final class CalendarStore: ObservableObject {
         scheduleMidnight()
 
         NSWorkspace.shared.notificationCenter.addObserver(forName: NSWorkspace.didWakeNotification, object: nil, queue: .main) { _ in
-            Task { @MainActor in self.dayRolledIfNeeded(); self.refreshIfStale(hours: 4) }
+            Task { @MainActor in self.dayRolledIfNeeded(); self.refreshIfStale(hours: 1) }
         }
+        // Time zone, clock or date changes (travel, manual clock changes)
+        NotificationCenter.default.addObserver(forName: .NSCalendarDayChanged, object: nil, queue: .main) { _ in
+            Task { @MainActor in self.dayRolledIfNeeded(); self.refresh() }
+        }
+        NotificationCenter.default.addObserver(forName: .NSSystemTimeZoneDidChange, object: nil, queue: .main) { _ in
+            Task { @MainActor in self.dayRolledIfNeeded(); self.refresh() }
+        }
+        // Calendar and Reminders changes are local: no need to download every feed again
         NotificationCenter.default.addObserver(forName: .EKEventStoreChanged, object: ek, queue: .main) { _ in
-            Task { @MainActor in self.refresh() }
+            Task { @MainActor in self.refresh(localOnly: true) }
         }
+        // Feeds (new Canvas assignments, …) are checked about once an hour
+        let t = Timer(timeInterval: 3600, repeats: true) { _ in Task { @MainActor in self.refreshIfStale(hours: 0.9) } }
+        t.tolerance = 300
+        RunLoop.main.add(t, forMode: .common)
+        hourly = t
         refresh()
         if calendarAccess == .notDetermined { requestCalendarAccess() }
     }
@@ -167,11 +182,11 @@ final class CalendarStore: ObservableObject {
 
     private func dayRolledIfNeeded() {
         let d = Calendar.current.startOfDay(for: Date())
+        scheduleMidnight()   // midnight moves when the time zone changes
         guard d != today else { return }
         today = d
         purgeExpired()
         merge()
-        scheduleMidnight()
     }
 
     // MARK: Sources
@@ -220,7 +235,7 @@ final class CalendarStore: ObservableObject {
         s.service = service
         if s.type == "canvas" {
             s.baseURL = "https://" + url.host!
-            _ = try await fetchCanvas(base: s.baseURL!, token: tok!, name: s.name, color: "", from: today, to: today.addingTimeInterval(86400))
+            _ = try await fetchCanvas(id: s.id, base: s.baseURL!, token: tok!, name: s.name, color: "", from: today, to: today.addingTimeInterval(86400))
             Keychain.set(tok!, for: s.id + ".token")
         } else {
             let data = try await Safe.fetch(URLRequest(url: url))
@@ -292,42 +307,63 @@ final class CalendarStore: ObservableObject {
         refresh()
     }
 
-    func refresh() {
+    /// Re-reads every source. `localOnly` re-reads just macOS Calendar and Reminders and keeps the downloaded feeds.
+    func refresh(localOnly: Bool = false) {
         guard !isDemo else { return }
-        guard !refreshing else { refreshAgain = true; return }
+        guard !refreshing else {
+            refreshAgain = true
+            if !localOnly { pendingFull = true }
+            return
+        }
         refreshing = true
         calendarAccess = EKEventStore.authorizationStatus(for: .event)
         remindersAccess = EKEventStore.authorizationStatus(for: .reminder)
-        let srcs = sources
+        let srcs = localOnly ? sources.filter { $0.type == "apple" } : sources
         let reminders = AppSettings.shared.showReminders
         let hidden = AppSettings.shared.hiddenCalendars
         let from = today, to = Calendar.current.date(byAdding: .day, value: daysAhead, to: today)!
         Task {
-            var all: [CalEvent] = [], failed: [String] = []
-            await withTaskGroup(of: (String, [CalEvent]?).self) { g in
+            var all: [CalEvent] = [], failed: [String] = [], keep: Set<String> = []
+            await withTaskGroup(of: (Source?, [CalEvent]?).self) { g in
                 for (i, s) in srcs.enumerated() {
                     let color = s.color ?? palette[i % palette.count]
                     g.addTask {
                         // Read off the main thread: the Keychain may ask the user for permission
                         let secret = s.type == "apple" ? nil : Keychain.get(s.id + (s.type == "canvas" ? ".token" : ".url"))
-                        return (s.name, try? await self.fetch(s, secret: secret, hidden: hidden, color: color, from: from, to: to))
+                        return (s, try? await self.fetch(s, secret: secret, hidden: hidden, color: color, from: from, to: to))
                     }
                 }
                 if reminders {
-                    g.addTask { ("Reminders", await self.fetchReminders(to: to)) }
+                    g.addTask { (nil, await self.fetchReminders(to: to)) }
                 }
-                for await (name, r) in g {
-                    if let r { all += r } else { failed.append(name) }
+                for await (s, r) in g {
+                    if let r { all += r } else if let s { failed.append(s.name); keep.insert(s.id) }
                 }
             }
+            // Feeds that weren't re-read (offline, or a local-only refresh) keep their last events
+            if localOnly { keep.formUnion(sources.filter { $0.type != "apple" }.map(\.id)) }
+            all += remote.filter { e in Self.feedID(e).map(keep.contains) ?? false }
             remote = all
             save(all, cacheFile)
-            lastRefresh = Date()
-            problem = failed.isEmpty ? nil : "Couldn't reach " + failed.sorted().joined(separator: ", ")
+            if !localOnly {
+                lastRefresh = Date()
+                problem = failed.isEmpty ? nil : "Couldn't reach " + failed.sorted().joined(separator: ", ")
+            }
             refreshing = false
             merge()
-            if refreshAgain { refreshAgain = false; refresh() }
+            if refreshAgain {
+                let full = pendingFull
+                refreshAgain = false; pendingFull = false
+                refresh(localOnly: !full)
+            }
         }
+    }
+
+    /// The source id inside a feed event's id ("ics:<id>:…", "canvas:<id>:…").
+    nonisolated static func feedID(_ e: CalEvent) -> String? {
+        let parts = e.id.split(separator: ":", maxSplits: 2)
+        guard parts.count == 3, parts[0] == "ics" || parts[0] == "canvas" else { return nil }
+        return String(parts[1])
     }
 
     nonisolated private func fetch(_ s: Source, secret: String?, hidden: Set<String>, color: String, from: Date, to: Date) async throws -> [CalEvent] {
@@ -343,7 +379,7 @@ final class CalendarStore: ObservableObject {
             }
         case "canvas":
             guard let base = s.baseURL, let token = secret else { throw FeedError.badLink }
-            return try await fetchCanvas(base: base, token: token, name: s.name, color: color, from: from, to: to)
+            return try await fetchCanvas(id: s.id, base: base, token: token, name: s.name, color: color, from: from, to: to)
         default:
             return []
         }
@@ -380,9 +416,10 @@ final class CalendarStore: ObservableObject {
         }
     }
 
-    nonisolated private func fetchCanvas(base: String, token: String, name: String, color: String, from: Date, to: Date) async throws -> [CalEvent] {
+    nonisolated private func fetchCanvas(id: String, base: String, token: String, name: String, color: String, from: Date, to: Date) async throws -> [CalEvent] {
         guard let root = Safe.httpsURL(base), var c = URLComponents(url: root, resolvingAgainstBaseURL: false) else { throw FeedError.badLink }
-        let iso = ISO8601DateFormatter()
+        let iso = ISO8601DateFormatter(), isoFrac = ISO8601DateFormatter()
+        isoFrac.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
         c.path = "/api/v1/planner/items"
         c.queryItems = [.init(name: "start_date", value: iso.string(from: from)),
                         .init(name: "end_date", value: iso.string(from: to)),
@@ -393,8 +430,8 @@ final class CalendarStore: ObservableObject {
               let arr = try? JSONSerialization.jsonObject(with: data) as? [[String: Any]] else { throw FeedError.unreachable }
         return arr.compactMap { it in
             guard let p = it["plannable"] as? [String: Any], let title = p["title"] as? String,
-                  let ds = it["plannable_date"] as? String, let d = iso.date(from: ds) else { return nil }
-            return CalEvent(id: "canvas:\(it["plannable_id"] ?? title):\(ds)", title: title, start: d, end: nil,
+                  let ds = it["plannable_date"] as? String, let d = iso.date(from: ds) ?? isoFrac.date(from: ds) else { return nil }
+            return CalEvent(id: "canvas:\(id):\(it["plannable_id"] ?? title)-\(ds)", title: title, start: d, end: nil,
                             allDay: false, source: (it["context_name"] as? String) ?? name, color: color)
         }
     }

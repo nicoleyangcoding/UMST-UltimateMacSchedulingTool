@@ -19,6 +19,7 @@ universal() {  # universal <output> <sources...>
 
 universal "$APP/Contents/MacOS/UMST" Sources/UMST/*.swift
 cp Resources/Info.plist "$APP/Contents/"
+cp Resources/AppIcon.icns "$APP/Contents/Resources/"
 
 codesign --force --options runtime --entitlements Resources/UMST.entitlements -s - "$APP"
 codesign --verify --strict "$APP"
