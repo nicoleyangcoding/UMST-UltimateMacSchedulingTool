@@ -1,4 +1,6 @@
-# UMST — Ultimate Mac Scheduling Tool
+# UMST — Free Desktop Calendar for Mac
+
+<p><img src="docs/images/icon.png" width="96" align="right" alt="UMST app icon"><b>Ultimate Mac Scheduling Tool</b> · <a href="https://nicoleyangcoding.github.io/UMST-UltimateMacSchedulingTool/">Website</a> · <a href="https://github.com/nicoleyangcoding/UMST-UltimateMacSchedulingTool/releases/latest">Download</a></p>
 
 **A free, open-source desktop calendar for macOS.** See Google Calendar, iCloud, Outlook, Apple Reminders, Canvas, Blackboard, Brightspace, Moodle, Schoology, Todoist, Asana and Trello in one glass widget on your desktop, and add to-dos from the menu bar in two keystrokes.
 
