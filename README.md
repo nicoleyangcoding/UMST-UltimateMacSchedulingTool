@@ -1,6 +1,6 @@
 # UMST — Ultimate Mac Scheduling Tool
 
-**A free, open-source desktop calendar and menu bar app for macOS.** See Google Calendar, iCloud, Outlook and Canvas LMS deadlines in one glass widget on your desktop, add to-dos in two keystrokes, open your most-used sites from the menu bar, and clear your screen with a one-click Show Desktop.
+**A free, open-source desktop calendar for macOS.** See Google Calendar, iCloud, Outlook, Apple Reminders, Canvas, Blackboard, Brightspace, Moodle, Schoology, Todoist, Asana and Trello in one glass widget on your desktop, and add to-dos from the menu bar in two keystrokes.
 
 ![UMST desktop calendar in Glass, Midnight, Sunset and Lavender themes](docs/images/themes.png)
 
@@ -37,21 +37,13 @@ cd UMST-UltimateMacSchedulingTool
 
 **Desktop calendar**
 - A calendar widget that sits on your desktop, under your windows, showing the next two weeks.
-- Pulls from every calendar on your Mac (Google / Gmail, iCloud, Exchange, Outlook), plus Canvas, school portals and any iCal feed.
-- Stays visible when you use Show Desktop. Drag it anywhere; it remembers where you put it.
-- Tap a day in the week strip to jump to it. Hover a to-do to check it off.
+- Everything in one place: every calendar on your Mac, Apple Reminders, your school's LMS and your task apps.
+- Drag it anywhere; it remembers where you put it. Tap a day in the week strip to jump to it.
+- Check off to-dos and reminders right on the calendar.
 
 **Quick add**
-- Click the calendar-plus icon in the menu bar, type, press Return.
+- Click the calendar-plus icon in the menu bar, type, press Return. Right-click it for Refresh, Settings and Quit.
 - Items go on today by default and disappear at midnight. Pick Tomorrow or any date with one click.
-
-**Quick Links**
-- A compact menu of the sites and apps you use most, grouped into Personal, School and Work.
-- Each link can open in a specific Chrome profile, so school links open signed in to your school account and work links to your work account.
-- **Add Link…** adds a site in one step. Optional Desktop folders with one-click launchers for every link.
-
-**Show Desktop**
-- One click hides every app; a second click brings everything back exactly as it was, tabs and all.
 
 **Themes and animations**
 - Six themes: Glass, Midnight, Sunset, Forest, Lavender and Graphite.
@@ -64,14 +56,22 @@ cd UMST-UltimateMacSchedulingTool
 
 ## Connecting calendars
 
-Open **Settings → Accounts** from the widget's `•••` menu, the person icon on the widget, or the Quick Links menu.
+Open **Settings → Accounts** from the widget's `•••` menu, the person icon on the widget, or by right-clicking the menu bar icon. **Connect a Service…** walks you through each one.
 
-| Calendar | How to connect |
+| Service | How to connect |
 | --- | --- |
-| Google Calendar / Gmail | Add the account in **System Settings → Internet Accounts** with Calendars turned on. Meeting invites, Zoom links and events Mail finds appear automatically. |
-| iCloud, Exchange, Outlook 365 | Same as above. Each calendar can be shown or hidden in Settings. |
-| Canvas LMS | In Canvas open **Calendar → Calendar Feed**, copy the link and paste it into **Add Feed**. Or use a Canvas access token for the planner API. |
-| Anything with an iCal / `.ics` / `webcal://` link | Paste it into **Add Feed** (Google's secret iCal address, Outlook published calendars, sports schedules, school portals). |
+| Google Calendar, Gmail, Google Classroom | Add the Google account in **System Settings → Internet Accounts** with Calendars on. Invites and events Mail finds in your email show up too. Or paste Google's *secret address in iCal format*. |
+| iCloud, Outlook / Microsoft 365, Exchange, Yahoo | Same as above. Each calendar can be shown or hidden in Settings. |
+| Apple Reminders | Turn on **Show reminders**. Reminders with a due date appear, and you can check them off from the widget. |
+| Canvas | **Calendar → Calendar Feed** link, or a Canvas access token for the planner API. |
+| Blackboard | **Calendar → Calendar Settings → Share Calendar** link. |
+| Brightspace (D2L) | **Calendar → Settings → Enable Calendar Feeds**, then **Subscribe** and copy the link. |
+| Moodle | **Calendar → Export calendar → Get calendar URL**. |
+| Schoology | The calendar's iCal export link. |
+| Todoist | **Settings → Integrations → Calendar Subscription URL**. |
+| Asana | **My Tasks or a project → ▾ → Sync to calendar**. |
+| Trello | The Calendar Power-Up's iCalendar feed link. |
+| Anything else with an iCal / `.ics` / `webcal://` link | Paste it into **Other calendar link**. |
 
 The calendar refreshes when you log in, at midnight, when your Mac wakes, the moment macOS Calendar changes, and whenever you click refresh.
 
@@ -82,10 +82,10 @@ The calendar refreshes when you log in, at midnight, when your Mac wakes, the mo
 | Free and open source | ✓ | ✓ | – | – | ✓ |
 | Calendar on the desktop | ✓ | – | ✓ | ✓ | – |
 | Menu bar quick add | ✓ | – | – | ✓ | ✓ |
-| Canvas deadlines built in | ✓ | – | – | – | ✓ |
+| Reminders on the calendar | ✓ | – | – | ✓ | – |
+| Canvas, Blackboard, Brightspace, Moodle, Schoology | ✓ | – | – | – | Canvas |
+| Todoist, Asana, Trello | ✓ | – | – | Todoist | – |
 | Any iCal feed without subscribing in Calendar | ✓ | – | – | – | – |
-| Quick Links per Chrome profile | ✓ | – | – | – | – |
-| One-click Show Desktop | ✓ | – | – | – | – |
 | Themes | ✓ | – | – | ✓ | – |
 
 UMST is built for students and anyone juggling school, work and personal calendars who wants everything in one glance, without a subscription.
@@ -102,7 +102,6 @@ Details are in [SECURITY.md](SECURITY.md).
 ## Requirements
 
 - macOS 14 Sonoma or later, Apple silicon or Intel
-- Google Chrome is optional (only for opening links in specific Chrome profiles; otherwise your default browser is used)
 
 ## Uninstall
 
@@ -111,16 +110,6 @@ curl -fsSL https://raw.githubusercontent.com/nicoleyangcoding/UMST-UltimateMacSc
 ```
 
 This removes the app, its settings, its data and its Keychain items.
-
-## Customizing Quick Links
-
-Links live in `~/Library/Application Support/UMST/links.json` (open it from **Edit Links…** in the menu). Each item has a `name` and either a `url` (optionally with a Chrome `profile` such as `Default` or `Profile 1`) or an `app` name from `/Applications`. See [`config/links.example.json`](config/links.example.json).
-
-To create Desktop folders with a launcher for every link:
-
-```sh
-python3 ~/Applications/UMST.app/Contents/Resources/make_folders.py
-```
 
 ## Development
 
@@ -134,8 +123,7 @@ build/UMST.app/Contents/MacOS/UMST --demo   # run with sample data
 
 ```
 Sources/UMST/   App source (AppKit + SwiftUI, no dependencies)
-Tests/          Parser, network allow-list and launcher tests
-Tools/          Icon and Desktop-launcher generators bundled into the app
+Tests/          Parser and network allow-list tests
 Resources/      Info.plist and entitlements
 scripts/        Build, test, install and release scripts
 ```

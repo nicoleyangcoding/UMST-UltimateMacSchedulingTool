@@ -6,7 +6,6 @@
 | --- | --- | --- |
 | Calendar feed links, Canvas tokens | Your login Keychain, service `com.umst.app.sources` | Marked device-only and never synced; never written to disk in plain text |
 | Feed names and hosts, quick-add items, event cache | `~/Library/Application Support/UMST/calendar` | Directory `0700`, files `0600` |
-| Quick Links | `~/Library/Application Support/UMST/links.json` | `0600` |
 | Preferences (theme, animations) | `UserDefaults` (`com.umst.app`) | Not sensitive |
 
 Removing a feed in Settings deletes its Keychain item.
@@ -20,9 +19,9 @@ Removing a feed in Settings deletes its Keychain item.
 ## Permissions
 
 - **Calendars**: read-only access to events for the next 14 days.
-- **Apple Events (System Events)**: used only to hide and unhide apps for Show Desktop.
+- **Reminders** (only if you turn it on): reads incomplete reminders with a due date; the only change UMST ever makes is marking a reminder done when you check it off.
 
-Quick Links only passes `http(s)` URLs and Chrome profile names matching `Default` or `Profile N` to Chrome, and only opens apps by plain name from `/Applications`.
+UMST asks for no other permissions.
 
 ## Reporting
 

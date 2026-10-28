@@ -44,6 +44,7 @@ final class AppSettings: ObservableObject {
     @Published var themeID: String { didSet { d.set(themeID, forKey: "theme") } }
     @Published var animations: Bool { didSet { d.set(animations, forKey: "animations") } }
     @Published var showWidget: Bool { didSet { d.set(showWidget, forKey: "showWidget"); onWidgetToggle?(showWidget) } }
+    @Published var showReminders: Bool { didSet { d.set(showReminders, forKey: "showReminders"); CalendarStore.shared.refresh() } }
     @Published var openAtLogin: Bool { didSet { d.set(openAtLogin, forKey: "openAtLogin"); applyLoginItem() } }
     @Published private(set) var loginItemError: String?
     @Published var hiddenCalendars: Set<String> {
@@ -58,6 +59,7 @@ final class AppSettings: ObservableObject {
         animations = d.object(forKey: "animations") as? Bool ?? true
         showWidget = d.object(forKey: "showWidget") as? Bool ?? true
         openAtLogin = d.object(forKey: "openAtLogin") as? Bool ?? true
+        showReminders = isDemo || d.bool(forKey: "showReminders")
         hiddenCalendars = Set(d.stringArray(forKey: "hiddenCalendars") ?? [])
     }
 

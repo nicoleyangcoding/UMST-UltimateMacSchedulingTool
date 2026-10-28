@@ -39,4 +39,4 @@ mv "$TMP/UMST.app" "$DEST"
 xattr -dr com.apple.quarantine "$DEST" 2>/dev/null || true
 
 open "$DEST"
-echo "UMST is installed and running. Look for the calendar on your desktop and the icons in your menu bar."
+echo "UMST is installed and running. Look for the calendar on your desktop and the calendar icon in your menu bar."

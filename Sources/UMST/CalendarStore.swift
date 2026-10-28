@@ -10,6 +10,7 @@ struct CalEvent: Codable, Identifiable, Hashable {
     var source: String
     var color: String
     var local = false
+    var reminder: Bool?          // from Apple Reminders; can be checked off
 }
 
 /// A calendar source. Secrets (feed links, tokens) are kept in the Keychain under the source's id.
@@ -20,6 +21,7 @@ struct Source: Codable, Identifiable {
     var id = UUID().uuidString
     var name: String
     var type: String
+    var service: String?         // which Service it was set up as (Canvas, Todoist, …)
     var host: String?            // shown in Settings; not secret
     var baseURL: String?         // canvas only
     var color: String?
@@ -36,6 +38,7 @@ struct Source: Codable, Identifiable {
         id = try c.decodeIfPresent(String.self, forKey: .id) ?? UUID().uuidString
         name = try c.decode(String.self, forKey: .name)
         type = try c.decode(String.self, forKey: .type)
+        service = try c.decodeIfPresent(String.self, forKey: .service)
         host = try c.decodeIfPresent(String.self, forKey: .host)
         baseURL = try c.decodeIfPresent(String.self, forKey: .baseURL)
         color = try c.decodeIfPresent(String.self, forKey: .color)
@@ -81,6 +84,7 @@ final class CalendarStore: ObservableObject {
     @Published fileprivate(set) var lastRefresh: Date?
     @Published private(set) var problem: String?
     @Published fileprivate(set) var calendarAccess = EKEventStore.authorizationStatus(for: .event)
+    @Published fileprivate(set) var remindersAccess = EKEventStore.authorizationStatus(for: .reminder)
     @Published private(set) var today = Calendar.current.startOfDay(for: Date())
     @Published fileprivate(set) var sources: [Source] = []
 
@@ -206,13 +210,14 @@ final class CalendarStore: ObservableObject {
     }
 
     /// Validates and test-connects before anything is saved.
-    func addFeed(name: String, link: String, token: String?) async throws {
+    func addFeed(name: String, link: String, token: String?, service: String?) async throws {
         guard let url = Safe.httpsURL(link) else { throw FeedError.badLink }
         let tok = token?.trimmingCharacters(in: .whitespacesAndNewlines)
         let trimmed = String(name.trimmingCharacters(in: .whitespacesAndNewlines).prefix(40))
         var s = Source(name: trimmed.isEmpty ? (url.host ?? "Calendar") : trimmed,
                        type: tok?.isEmpty == false ? "canvas" : "ics", host: url.host,
                        color: palette[sources.count % palette.count])
+        s.service = service
         if s.type == "canvas" {
             s.baseURL = "https://" + url.host!
             _ = try await fetchCanvas(base: s.baseURL!, token: tok!, name: s.name, color: "", from: today, to: today.addingTimeInterval(86400))
@@ -254,6 +259,32 @@ final class CalendarStore: ObservableObject {
         }
     }
 
+    func requestRemindersAccess() {
+        Task {
+            _ = try? await ek.requestFullAccessToReminders()
+            remindersAccess = EKEventStore.authorizationStatus(for: .reminder)
+            if remindersAccess != .fullAccess {
+                AppSettings.shared.showReminders = false
+                if let u = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Reminders") {
+                    NSWorkspace.shared.open(u)
+                }
+            }
+            refresh()
+        }
+    }
+
+    /// Checks a reminder off in Apple Reminders itself.
+    func completeReminder(_ e: CalEvent) {
+        guard !isDemo else { remote.removeAll { $0.id == e.id }; merge(); return }
+        let id = String(e.id.dropFirst("rem:".count))
+        if let r = ek.calendarItem(withIdentifier: id) as? EKReminder {
+            r.isCompleted = true
+            try? ek.save(r, commit: true)
+        }
+        remote.removeAll { $0.id == e.id }
+        merge()
+    }
+
     // MARK: Refresh
 
     func refreshIfStale(hours: Double) {
@@ -266,7 +297,9 @@ final class CalendarStore: ObservableObject {
         guard !refreshing else { refreshAgain = true; return }
         refreshing = true
         calendarAccess = EKEventStore.authorizationStatus(for: .event)
+        remindersAccess = EKEventStore.authorizationStatus(for: .reminder)
         let srcs = sources
+        let reminders = AppSettings.shared.showReminders
         let hidden = AppSettings.shared.hiddenCalendars
         let from = today, to = Calendar.current.date(byAdding: .day, value: daysAhead, to: today)!
         Task {
@@ -279,6 +312,9 @@ final class CalendarStore: ObservableObject {
                         let secret = s.type == "apple" ? nil : Keychain.get(s.id + (s.type == "canvas" ? ".token" : ".url"))
                         return (s.name, try? await self.fetch(s, secret: secret, hidden: hidden, color: color, from: from, to: to))
                     }
+                }
+                if reminders {
+                    g.addTask { ("Reminders", await self.fetchReminders(to: to)) }
                 }
                 for await (name, r) in g {
                     if let r { all += r } else { failed.append(name) }
@@ -322,6 +358,25 @@ final class CalendarStore: ObservableObject {
             CalEvent(id: "ek:\($0.eventIdentifier ?? UUID().uuidString):\($0.startDate.timeIntervalSince1970)",
                      title: $0.title ?? "Event", start: $0.startDate, end: $0.endDate, allDay: $0.isAllDay,
                      source: $0.calendar.title, color: hex($0.calendar.color))
+        }
+    }
+
+    /// Incomplete reminders due before the end of the window. Overdue ones show on today.
+    nonisolated private func fetchReminders(to: Date) async -> [CalEvent] {
+        guard EKEventStore.authorizationStatus(for: .reminder) == .fullAccess else { return [] }
+        let store = await ek
+        let today = Calendar.current.startOfDay(for: Date())
+        let pred = store.predicateForIncompleteReminders(withDueDateStarting: nil, ending: to, calendars: nil)
+        let found: [EKReminder] = await withCheckedContinuation { c in
+            store.fetchReminders(matching: pred) { c.resume(returning: $0 ?? []) }
+        }
+        return found.compactMap { r in
+            guard let comps = r.dueDateComponents, let due = Calendar.current.date(from: comps) else { return nil }
+            let timed = comps.hour != nil && due >= today
+            let start = timed ? due : max(Calendar.current.startOfDay(for: due), today)
+            return CalEvent(id: "rem:\(r.calendarItemIdentifier)", title: r.title ?? "Reminder",
+                            start: start, end: timed ? nil : Calendar.current.date(byAdding: .day, value: 1, to: start),
+                            allDay: !timed, source: r.calendar.title, color: hex(r.calendar.color), reminder: true)
         }
     }
 
@@ -388,11 +443,16 @@ let isDemo = ProcessInfo.processInfo.arguments.contains("--demo")
 
 extension CalendarStore {
     fileprivate func startDemo() {
-        sources = [Source(name: "Mac Calendars", type: "apple"),
-                   Source(name: "Canvas", type: "ics", host: "canvas.example.edu", color: "#E2412D")]
+        var canvas = Source(name: "Canvas", type: "ics", host: "canvas.example.edu", color: "#E2412D")
+        canvas.service = "canvas"
+        var todoist = Source(name: "Todoist", type: "ics", host: "todoist.com", color: "#FF9F0A")
+        todoist.service = "todoist"
+        sources = [Source(name: "Mac Calendars", type: "apple"), canvas, todoist]
         calendarAccess = .fullAccess
         items = [LocalItem(title: "Pick up dry cleaning", day: today), LocalItem(title: "Call Mom", day: today)]
-        remote = Demo.events(today)
+        remote = Demo.events(today) + [CalEvent(id: "rem:demo", title: "Email advisor about spring classes", start: today,
+                                                 end: Calendar.current.date(byAdding: .day, value: 1, to: today),
+                                                 allDay: true, source: "Reminders", color: "#FF9F0A", reminder: true)]
         lastRefresh = Date()
         merge()
     }
@@ -421,6 +481,7 @@ enum Demo {
             ("Midterm exam", at(3, 0), true, "Canvas", "#E2412D"),
             ("Halloween", at(4, 0), true, "Holidays", "#AF52DE"),
             ("1:1 with manager", at(6, 15), false, "Work", "#30A46C"),
+            ("Renew library books", at(2, 0), true, "Todoist", "#FF9F0A"),
         ]
         return list.enumerated().map { i, e in
             CalEvent(id: "demo\(i)", title: e.0, start: e.1, end: e.2 ? c.date(byAdding: .day, value: 1, to: e.1) : e.1.addingTimeInterval(3600),

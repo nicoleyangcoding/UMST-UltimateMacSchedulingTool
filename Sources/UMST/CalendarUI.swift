@@ -4,7 +4,7 @@ import SwiftUI
 
 // MARK: Desktop widget window
 // Sits just above the desktop icons and below every app window, on all Spaces,
-// so Show Desktop (which hides apps) leaves it front and center.
+// so it's there whenever you look at your desktop.
 
 final class WidgetWindow: NSWindow {
     override var canBecomeKey: Bool { true }
@@ -249,8 +249,12 @@ struct EventRow: View {
 
     var body: some View {
         HStack(spacing: 8) {
-            if e.local {
-                Button { withAnimation(settings.anim()) { CalendarStore.shared.complete(e) } } label: {
+            if e.local || e.reminder == true {
+                Button {
+                    withAnimation(settings.anim()) {
+                        if e.local { CalendarStore.shared.complete(e) } else { CalendarStore.shared.completeReminder(e) }
+                    }
+                } label: {
                     Image(systemName: hover ? "checkmark.circle.fill" : "circle")
                         .font(.system(size: 13)).foregroundStyle(hover ? .green : .secondary)
                         .contentTransition(.symbolEffect(.replace))
@@ -273,6 +277,7 @@ struct EventRow: View {
 
     private var timeLabel: String {
         if e.local { return "To-do" }
+        if e.reminder == true && e.allDay { return "Reminder" }
         if e.allDay { return "All day" }
         if e.start < day {   // continues from an earlier day
             let next = Calendar.current.date(byAdding: .day, value: 1, to: day)!

@@ -44,7 +44,7 @@ enum Safe {
         c.urlCredentialStorage = nil
         c.timeoutIntervalForRequest = 20
         c.timeoutIntervalForResource = 40
-        c.httpAdditionalHeaders = ["User-Agent": "UMST/0.1"]
+        c.httpAdditionalHeaders = ["User-Agent": "UMST/0.2"]
         return URLSession(configuration: c)
     }()
 

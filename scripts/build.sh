@@ -18,11 +18,8 @@ universal() {  # universal <output> <sources...>
 }
 
 universal "$APP/Contents/MacOS/UMST" Sources/UMST/*.swift
-universal "$APP/Contents/Resources/make_icons" Tools/make_icons.swift
-cp Tools/make_folders.py config/links.example.json "$APP/Contents/Resources/"
 cp Resources/Info.plist "$APP/Contents/"
 
-codesign --force --options runtime -s - "$APP/Contents/Resources/make_icons"
 codesign --force --options runtime --entitlements Resources/UMST.entitlements -s - "$APP"
 codesign --verify --strict "$APP"
 echo "Built $APP"

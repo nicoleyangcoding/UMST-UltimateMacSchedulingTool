@@ -79,7 +79,7 @@ struct AccountsTab: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 18) {
-                section("Mac Calendars", caption: "Google, Gmail, iCloud and Exchange accounts added to this Mac.") {
+                section("Mac Accounts", caption: "Google, iCloud, Outlook, Exchange and Yahoo accounts on this Mac, including events Mail finds in your email.") {
                     if store.needsCalendarAccess {
                         HStack(spacing: 12) {
                             Image(systemName: "calendar.badge.lock").font(.system(size: 22)).foregroundStyle(.secondary)
@@ -115,21 +115,32 @@ struct AccountsTab: View {
                         if let u = URL(string: "x-apple.systempreferences:com.apple.Internet-Accounts-Settings.extension") {
                             NSWorkspace.shared.open(u)
                         }
-                    } label: { Label("Add Google or Other Account…", systemImage: "plus.circle") }
+                    } label: { Label("Add Google, Microsoft or Other Account…", systemImage: "plus.circle") }
                         .buttonStyle(.link).font(.system(size: 12))
                 }
 
-                section("Calendar Feeds", caption: "Canvas, Google secret iCal links, Outlook and any other calendar link.") {
+                section("Apple Reminders", caption: "Reminders with a due date, including overdue ones. Check them off right on the calendar.") {
+                    Toggle(isOn: Binding(get: { settings.showReminders }, set: { on in
+                        settings.showReminders = on
+                        if on && store.remindersAccess != .fullAccess { store.requestRemindersAccess() }
+                    })) {
+                        Label("Show reminders", systemImage: "checklist").font(.system(size: 12.5))
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                    .toggleStyle(.switch).controlSize(.small)
+                }
+
+                section("Connected Services", caption: "Canvas, Blackboard, Brightspace, Moodle, Schoology, Todoist, Asana, Trello and any calendar link.") {
                     let feeds = store.sources.filter { $0.type != "apple" }
                     if feeds.isEmpty && !adding {
-                        Text("No feeds connected.").font(.system(size: 12)).foregroundStyle(.secondary)
+                        Text("Nothing connected yet.").font(.system(size: 12)).foregroundStyle(.secondary)
                     }
                     ForEach(feeds) { s in
                         HStack(spacing: 10) {
                             Circle().fill(Color(hex: s.color ?? "#8E8E93")).frame(width: 8, height: 8)
                             VStack(alignment: .leading, spacing: 1) {
                                 Text(s.name).font(.system(size: 12.5, weight: .medium))
-                                Text("\(s.host ?? "") · \(s.type == "canvas" ? "Canvas API" : "Feed")")
+                                Text("\(s.host ?? "") · \(s.type == "canvas" ? "Canvas API" : Service.find(s.service)?.name ?? "Calendar link")")
                                     .font(.system(size: 10.5)).foregroundStyle(.secondary)
                             }
                             Spacer()
@@ -143,7 +154,7 @@ struct AccountsTab: View {
                             .transition(.opacity.combined(with: .move(edge: .top)))
                     } else {
                         Button { withAnimation(settings.anim()) { adding = true } } label: {
-                            Label("Add Feed…", systemImage: "plus.circle")
+                            Label("Connect a Service…", systemImage: "plus.circle")
                         }
                         .buttonStyle(.link).font(.system(size: 12))
                     }
@@ -194,6 +205,7 @@ struct AccountsTab: View {
 
 struct AddFeedForm: View {
     let done: () -> Void
+    @State private var service: Service?
     @State private var name = ""
     @State private var link = ""
     @State private var useToken = false
@@ -203,8 +215,46 @@ struct AddFeedForm: View {
     @State private var error: String?
 
     var body: some View {
+        if let service { form(service) } else { picker }
+    }
+
+    private var picker: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            ForEach(["School", "Calendars", "Tasks", "Other"], id: \.self) { g in
+                VStack(alignment: .leading, spacing: 5) {
+                    Text(g).font(.system(size: 10.5, weight: .semibold)).foregroundStyle(.secondary)
+                    LazyVGrid(columns: [GridItem(.adaptive(minimum: 140), spacing: 6)], alignment: .leading, spacing: 6) {
+                        ForEach(Service.all.filter { $0.group == g }) { sv in
+                            Button {
+                                withAnimation(AppSettings.shared.anim()) { service = sv; name = sv.id == "ics" ? "" : sv.name }
+                            } label: {
+                                Label(sv.name, systemImage: sv.icon).font(.system(size: 12)).lineLimit(1)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                    .padding(.horizontal, 9).padding(.vertical, 6)
+                                    .background(.background.opacity(0.6), in: RoundedRectangle(cornerRadius: 7, style: .continuous))
+                                    .contentShape(Rectangle())
+                            }
+                            .buttonStyle(.plain)
+                        }
+                    }
+                }
+            }
+            HStack { Spacer(); Button("Cancel", action: done).keyboardShortcut(.cancelAction) }
+        }
+    }
+
+    private func form(_ sv: Service) -> some View {
         VStack(alignment: .leading, spacing: 8) {
-            TextField("Name (e.g. Canvas)", text: $name).textFieldStyle(.roundedBorder)
+            HStack(spacing: 6) {
+                Button { withAnimation(AppSettings.shared.anim()) { service = nil; error = nil } } label: {
+                    Image(systemName: "chevron.left").font(.system(size: 11, weight: .semibold))
+                }
+                .buttonStyle(.borderless).help("Back")
+                Label(sv.name, systemImage: sv.icon).font(.system(size: 12.5, weight: .semibold))
+            }
+            Text(useToken ? "Canvas → Account → Settings → New Access Token. Then enter your school's Canvas address below." : sv.steps)
+                .font(.system(size: 11)).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+            TextField("Name", text: $name).textFieldStyle(.roundedBorder)
             HStack(spacing: 6) {
                 Group {
                     if reveal { TextField(useToken ? "https://canvas.school.edu" : "https://… or webcal://…", text: $link) }
@@ -214,21 +264,21 @@ struct AddFeedForm: View {
                 Button { reveal.toggle() } label: { Image(systemName: reveal ? "eye.slash" : "eye") }
                     .buttonStyle(.borderless).help(reveal ? "Hide" : "Show")
             }
-            Toggle("Use a Canvas API token instead of a feed link", isOn: $useToken)
-                .toggleStyle(.checkbox).font(.system(size: 11))
-            if useToken {
-                SecureField("Canvas access token", text: $token).textFieldStyle(.roundedBorder)
+            if sv.tokenOption {
+                Toggle("Use a Canvas access token instead of the feed link", isOn: $useToken)
+                    .toggleStyle(.checkbox).font(.system(size: 11))
+                if useToken {
+                    SecureField("Canvas access token", text: $token).textFieldStyle(.roundedBorder)
+                }
             }
             if let error {
                 Label(error, systemImage: "exclamationmark.circle.fill").font(.system(size: 11)).foregroundStyle(.red)
             }
             HStack {
-                Text(useToken ? "Canvas → Account → Settings → New Access Token" : "Canvas → Calendar → Calendar Feed")
-                    .font(.system(size: 10.5)).foregroundStyle(.tertiary)
                 Spacer()
                 Button("Cancel", action: done).keyboardShortcut(.cancelAction)
                 Button {
-                    connect()
+                    connect(sv)
                 } label: {
                     if busy { ProgressView().controlSize(.small).frame(width: 56) } else { Text("Connect").frame(width: 56) }
                 }
@@ -238,11 +288,11 @@ struct AddFeedForm: View {
         }
     }
 
-    private func connect() {
+    private func connect(_ sv: Service) {
         busy = true; error = nil
         Task {
             do {
-                try await CalendarStore.shared.addFeed(name: name, link: link, token: useToken ? token : nil)
+                try await CalendarStore.shared.addFeed(name: name, link: link, token: useToken ? token : nil, service: sv.id)
                 link = ""; token = ""
                 done()
             } catch {
@@ -298,7 +348,7 @@ struct AppearanceTab: View {
                     Toggle(isOn: $settings.showWidget) {
                         VStack(alignment: .leading, spacing: 2) {
                             Text("Show calendar on desktop").font(.system(size: 12.5, weight: .medium))
-                            Text("Drag the calendar to move it. It stays visible when you use Show Desktop.")
+                            Text("Drag the calendar to move it. It sits behind your windows, on every desktop.")
                                 .font(.system(size: 11)).foregroundStyle(.secondary)
                         }
                         .frame(maxWidth: .infinity, alignment: .leading)

@@ -13,18 +13,20 @@
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>0.1.0</string>
+	<string>0.2.0</string>
 	<key>CFBundleVersion</key>
-	<string>1</string>
+	<string>2</string>
 	<key>LSMinimumSystemVersion</key>
 	<string>14.0</string>
 	<key>LSUIElement</key>
 	<true/>
-	<key>NSAppleEventsUsageDescription</key>
-	<string>UMST hides and restores your apps when you use Show Desktop.</string>
 	<key>NSCalendarsFullAccessUsageDescription</key>
 	<string>UMST shows events from the calendars on this Mac (Google, iCloud, Exchange) on your desktop calendar. Nothing leaves your Mac.</string>
 	<key>NSCalendarsUsageDescription</key>
 	<string>UMST shows your calendars on the desktop calendar.</string>
+	<key>NSRemindersFullAccessUsageDescription</key>
+	<string>UMST shows reminders that have a due date on your desktop calendar and lets you check them off. Nothing leaves your Mac.</string>
+	<key>NSRemindersUsageDescription</key>
+	<string>UMST shows your reminders on the desktop calendar.</string>
 </dict>
 </plist>
