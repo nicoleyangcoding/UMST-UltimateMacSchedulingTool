@@ -4,437 +4,425 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>UMST — Free Desktop Calendar for Mac with Canvas, Google & Todoist</title>
-<meta name="description" content="UMST is a free, open-source desktop calendar widget for macOS. See Google Calendar, iCloud, Outlook, Apple Reminders, Canvas, Blackboard, Brightspace, Moodle, Schoology, Todoist, Asana and Trello in one place on your Mac desktop.">
-<meta name="keywords" content="mac desktop calendar, macos calendar widget, canvas calendar mac, canvas deadlines mac app, student planner mac, google calendar desktop mac, todoist calendar mac, menu bar calendar, free mac calendar app, open source macos app">
+<meta name="description" content="UMST is a free, open-source desktop calendar for macOS. Canvas, Blackboard, Moodle, Google Calendar, Outlook, Apple Reminders, Todoist, Asana and Trello in one list on your Mac desktop, with menu bar quick add.">
 <link rel="canonical" href="https://nicoleyangcoding.github.io/UMST-UltimateMacSchedulingTool/">
-<link rel="icon" type="image/png" href="images/icon.png">
+<link rel="icon" type="image/png" href="images/icon-64.png">
 <link rel="apple-touch-icon" href="images/icon.png">
-<meta name="theme-color" content="#14152e">
+<meta name="theme-color" content="#f5f3ee">
 <meta property="og:type" content="website">
-<meta property="og:title" content="UMST — your whole schedule, right on your Mac desktop">
-<meta property="og:description" content="Free, open-source desktop calendar for macOS. Google, iCloud, Outlook, Reminders, Canvas, Blackboard, Moodle, Todoist and more in one glance.">
+<meta property="og:title" content="UMST — every deadline and meeting, on your Mac desktop">
+<meta property="og:description" content="Free, open-source desktop calendar for macOS. Canvas, Google, Outlook, Reminders, Todoist and more in one list.">
 <meta property="og:url" content="https://nicoleyangcoding.github.io/UMST-UltimateMacSchedulingTool/">
 <meta property="og:image" content="https://nicoleyangcoding.github.io/UMST-UltimateMacSchedulingTool/images/themes.png">
 <meta name="twitter:card" content="summary_large_image">
 <script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "SoftwareApplication",
-  "name": "UMST — Ultimate Mac Scheduling Tool",
-  "operatingSystem": "macOS 14 or later",
-  "applicationCategory": "ProductivityApplication",
-  "description": "Free, open-source desktop calendar widget for macOS that combines Google Calendar, iCloud, Outlook, Apple Reminders, Canvas, Blackboard, Brightspace, Moodle, Schoology, Todoist, Asana and Trello.",
-  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
-  "license": "https://opensource.org/licenses/MIT",
-  "downloadUrl": "https://github.com/nicoleyangcoding/UMST-UltimateMacSchedulingTool/releases/latest",
-  "image": "https://nicoleyangcoding.github.io/UMST-UltimateMacSchedulingTool/images/themes.png",
-  "author": { "@type": "Person", "name": "Nicole Yang", "url": "https://github.com/nicoleyangcoding" }
-}
+{"@context":"https://schema.org","@type":"SoftwareApplication","name":"UMST — Ultimate Mac Scheduling Tool",
+ "operatingSystem":"macOS 14 or later","applicationCategory":"ProductivityApplication",
+ "description":"Free, open-source desktop calendar for macOS that combines Canvas, Blackboard, Brightspace, Moodle, Schoology, Google Calendar, iCloud, Outlook, Apple Reminders, Todoist, Asana and Trello.",
+ "offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"license":"https://opensource.org/licenses/MIT",
+ "downloadUrl":"https://github.com/nicoleyangcoding/UMST-UltimateMacSchedulingTool/releases/latest",
+ "author":{"@type":"Person","name":"Nicole Yang","url":"https://github.com/nicoleyangcoding"}}
 </script>
 <style>
 :root {
-  --bg: #0e0f22;
-  --bg2: #16183a;
-  --ink: #f4f3fb;
-  --muted: #a9a8c6;
-  --line: rgba(255,255,255,.1);
-  --card: rgba(255,255,255,.05);
-  --coral: #ff5a5f;
-  --violet: #8b5cf6;
-  --indigo: #4f46e5;
-  --radius: 22px;
-  --ease: cubic-bezier(.22,1,.36,1);
+  --paper: #f5f3ee; --surface: #ffffff; --ink: #1c1b1f; --muted: #6b6870; --line: #e4e0d8;
+  --red: #e2412d; --blue: #0a84ff; --purple: #8b5cf6; --orange: #f59e0b; --green: #2fb36b;
+  --ease: cubic-bezier(.2,.8,.2,1);
+}
+@media (prefers-color-scheme: dark) {
+  :root { --paper: #141416; --surface: #1d1d20; --ink: #f2f1ee; --muted: #9c99a3; --line: #2c2c31; }
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
-html { scroll-behavior: smooth; }
-body {
-  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Inter, system-ui, sans-serif;
-  background: var(--bg); color: var(--ink); line-height: 1.55; overflow-x: hidden;
-  -webkit-font-smoothing: antialiased;
-}
+body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; background: var(--paper); color: var(--ink);
+  line-height: 1.5; -webkit-font-smoothing: antialiased; }
 a { color: inherit; }
-img { max-width: 100%; height: auto; display: block; }
-.wrap { width: min(1120px, 100% - 32px); margin-inline: auto; }
+.wrap { width: min(1080px, 100% - 32px); margin-inline: auto; }
 
-/* Ambient background */
-.orbs { position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; }
-.orb { position: absolute; border-radius: 50%; filter: blur(90px); opacity: .55; animation: drift 22s var(--ease) infinite alternate; }
-.orb.a { width: 520px; height: 520px; background: var(--indigo); top: -160px; left: -120px; }
-.orb.b { width: 460px; height: 460px; background: var(--violet); top: 30%; right: -160px; animation-duration: 27s; }
-.orb.c { width: 380px; height: 380px; background: var(--coral); bottom: -160px; left: 30%; opacity: .35; animation-duration: 31s; }
-@keyframes drift { to { transform: translate(80px, 60px) scale(1.15); } }
-
-/* Nav */
-nav { position: sticky; top: 0; z-index: 10; backdrop-filter: blur(18px) saturate(1.4); -webkit-backdrop-filter: blur(18px) saturate(1.4);
-  background: rgba(14,15,34,.55); border-bottom: 1px solid var(--line); }
-nav .wrap { display: flex; align-items: center; justify-content: space-between; height: 62px; }
-.brand { display: flex; gap: 10px; align-items: center; font-weight: 700; text-decoration: none; letter-spacing: -.01em; }
-.brand img { width: 34px; height: 34px; }
-nav .links { display: flex; gap: 22px; align-items: center; font-size: 14px; }
-nav .links a { text-decoration: none; color: var(--muted); transition: color .2s; }
-nav .links a:hover { color: var(--ink); }
-@media (max-width: 640px) { nav .links a.hide-sm { display: none; } }
-
-.btn { display: inline-flex; align-items: center; gap: 8px; padding: 12px 20px; border-radius: 999px; font-weight: 600; font-size: 15px;
-  text-decoration: none; border: 1px solid var(--line); background: var(--card); color: var(--ink); cursor: pointer;
-  transition: transform .35s var(--ease), background .25s, box-shadow .35s var(--ease); }
-.btn:hover { transform: translateY(-2px); background: rgba(255,255,255,.09); }
-.btn.primary { background: linear-gradient(135deg, var(--coral), #e2412d); border-color: transparent; box-shadow: 0 10px 30px -10px rgba(255,90,95,.7); }
-.btn.primary:hover { box-shadow: 0 16px 40px -10px rgba(255,90,95,.85); }
-.btn.small { padding: 8px 14px; font-size: 13px; }
+/* Top bar */
+.top { display: flex; justify-content: space-between; align-items: center; padding: 18px 0; }
+.brand { display: flex; align-items: center; gap: 10px; font-weight: 700; text-decoration: none; font-size: 17px; }
+.brand img { width: 30px; height: 30px; }
+.actions { display: flex; gap: 8px; }
+.btn { display: inline-flex; align-items: center; gap: 7px; height: 40px; padding: 0 16px; border-radius: 10px; font: 600 14px/1 inherit;
+  text-decoration: none; border: 1px solid var(--line); background: var(--surface); color: var(--ink); cursor: pointer; transition: transform .15s var(--ease); }
+.btn:hover { transform: translateY(-1px); }
+.btn:active { transform: none; }
+.btn.red { background: var(--red); color: #fff; border-color: var(--red); }
+.btn svg { width: 16px; height: 16px; }
+@media (max-width: 520px) { .top .hide-xs { display: none; } }
 
 /* Hero */
-.hero { padding: 88px 0 40px; display: grid; grid-template-columns: 1.05fr .95fr; gap: 48px; align-items: center; }
-@media (max-width: 900px) { .hero { grid-template-columns: 1fr; padding-top: 56px; text-align: center; } .hero .cta, .badges { justify-content: center; } }
-.eyebrow { display: inline-flex; gap: 8px; align-items: center; font-size: 13px; color: var(--muted); padding: 6px 12px; border: 1px solid var(--line);
-  border-radius: 999px; background: var(--card); }
-.eyebrow .dot { width: 7px; height: 7px; border-radius: 50%; background: #30d158; box-shadow: 0 0 0 0 rgba(48,209,88,.6); animation: pulse 2.4s infinite; }
-@keyframes pulse { 70% { box-shadow: 0 0 0 8px rgba(48,209,88,0); } 100% { box-shadow: 0 0 0 0 rgba(48,209,88,0); } }
-h1 { font-size: clamp(40px, 6vw, 68px); line-height: 1.02; letter-spacing: -.035em; margin: 20px 0 18px; font-weight: 800; }
-.grad { background: linear-gradient(100deg, #fff 10%, #c4b5fd 45%, var(--coral) 90%); -webkit-background-clip: text; background-clip: text; color: transparent;
-  background-size: 200% auto; animation: shine 8s linear infinite; }
-@keyframes shine { to { background-position: 200% center; } }
-.lede { font-size: clamp(17px, 2vw, 20px); color: var(--muted); max-width: 34em; }
-@media (max-width: 900px) { .lede { margin-inline: auto; } }
-.cta { display: flex; gap: 12px; margin-top: 30px; flex-wrap: wrap; }
-.badges { display: flex; gap: 18px; margin-top: 22px; font-size: 13px; color: var(--muted); flex-wrap: wrap; }
-.badges span::before { content: "✓ "; color: #30d158; }
+.hero { display: grid; grid-template-columns: .9fr 1.1fr; gap: 40px; align-items: center; padding: 28px 0 56px; }
+@media (max-width: 920px) { .hero { grid-template-columns: 1fr; padding-top: 8px; } }
+h1 { font-size: clamp(34px, 5vw, 54px); line-height: 1.05; letter-spacing: -.03em; font-weight: 750; }
+h1 em { font-style: normal; color: var(--red); }
+.lede { margin-top: 16px; font-size: 18px; color: var(--muted); max-width: 28em; }
+.hero .cta { display: flex; gap: 10px; margin-top: 24px; flex-wrap: wrap; }
+.facts { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 18px; font-size: 13px; color: var(--muted); }
+.facts span::before { content: "✓ "; color: var(--green); font-weight: 700; }
 
-/* Hero stage: theme switcher */
-.stage { position: relative; display: grid; place-items: center; perspective: 1400px; }
-.device { position: relative; width: min(360px, 82vw); aspect-ratio: 360 / 440; transform-style: preserve-3d;
-  transition: transform .8s var(--ease); animation: float 7s ease-in-out infinite; }
-@keyframes float { 50% { translate: 0 -12px; } }
-.device img { position: absolute; inset: 0; width: 100%; height: 100%; border-radius: 26px; opacity: 0; transform: scale(.96);
-  transition: opacity .6s var(--ease), transform .8s var(--ease); box-shadow: 0 40px 80px -30px rgba(0,0,0,.8); }
-.device img.on { opacity: 1; transform: none; }
-.glow { position: absolute; width: 70%; height: 60%; border-radius: 50%; filter: blur(70px); background: var(--accent, var(--coral)); opacity: .45;
-  transition: background .8s var(--ease); z-index: -1; }
-.themes { display: flex; gap: 8px; margin-top: 26px; flex-wrap: wrap; justify-content: center; }
-.themes button { font: inherit; font-size: 12.5px; color: var(--muted); background: var(--card); border: 1px solid var(--line); border-radius: 999px;
-  padding: 6px 12px; cursor: pointer; display: flex; gap: 6px; align-items: center; transition: all .3s var(--ease); }
-.themes button i { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
-.themes button[aria-pressed="true"] { color: var(--ink); background: rgba(255,255,255,.12); border-color: rgba(255,255,255,.25); }
+/* Demo: a Mac desktop with UMST on it */
+.demo { position: relative; }
+.desk { position: relative; height: 470px; border-radius: 16px; overflow: hidden; border: 1px solid var(--line);
+  background: linear-gradient(160deg, #3b4a7a 0%, #6d5a8e 55%, #c98a7a 100%); contain: layout paint; }
+.menubar { position: absolute; inset: 0 0 auto 0; height: 26px; display: flex; justify-content: flex-end; align-items: center; gap: 14px;
+  padding: 0 12px; background: rgba(255,255,255,.22); color: #fff; font-size: 12px; font-weight: 500; }
+.mb-icon { width: 24px; height: 20px; border-radius: 5px; display: grid; place-items: center; transition: background .2s; }
+.mb-icon svg { width: 15px; height: 15px; stroke: #fff; fill: none; stroke-width: 2; stroke-linecap: round; }
+.mb-icon.active { background: rgba(255,255,255,.35); }
 
-/* Install box */
-.install { margin: 64px auto 0; max-width: 760px; }
-.term { display: flex; align-items: center; gap: 12px; padding: 14px 14px 14px 20px; border-radius: 16px; background: rgba(0,0,0,.35); border: 1px solid var(--line);
-  font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 13.5px; }
-.term code { flex: 1; overflow-x: auto; white-space: nowrap; color: #d6d4f0; scrollbar-width: none; }
-.term code::-webkit-scrollbar { display: none; }
-.term .p { color: var(--coral); user-select: none; }
-.install p { text-align: center; color: var(--muted); font-size: 13px; margin-top: 10px; }
+.pop { position: absolute; top: 32px; right: 96px; width: 236px; padding: 10px; border-radius: 12px; background: #2a2a2e; color: #f2f2f2;
+  box-shadow: 0 12px 30px rgba(0,0,0,.35); opacity: 0; transform: translateY(-6px) scale(.98); transform-origin: top right;
+  transition: opacity .2s var(--ease), transform .25s var(--ease); pointer-events: none; z-index: 3; }
+.pop.open { opacity: 1; transform: none; }
+.pop .field { font-size: 14px; min-height: 20px; }
+.pop .field .ph { color: #8b8b90; }
+.caret { display: inline-block; width: 1.5px; height: 15px; background: var(--red); vertical-align: -2px; margin-left: 1px; animation: blink 1s steps(1) infinite; }
+@keyframes blink { 50% { opacity: 0; } }
+.pop .chips { display: flex; gap: 6px; margin-top: 8px; font-size: 11px; align-items: center; }
+.pop .chips b { background: var(--red); color: #fff; padding: 2px 8px; border-radius: 99px; font-weight: 600; }
+.pop .chips span { background: rgba(255,255,255,.1); padding: 2px 8px; border-radius: 99px; }
+.pop .chips kbd { margin-left: auto; font: inherit; color: #8b8b90; transition: color .15s; }
+.pop .chips kbd.hit { color: #fff; }
+
+.sources { position: absolute; left: 16px; top: 48px; display: grid; gap: 8px; z-index: 2; }
+.src { display: flex; align-items: center; gap: 8px; padding: 7px 11px 7px 9px; border-radius: 10px; background: rgba(255,255,255,.16);
+  color: rgba(255,255,255,.75); font-size: 12.5px; font-weight: 600; transition: background .3s, color .3s, transform .3s var(--ease); }
+.src i { width: 16px; height: 16px; border-radius: 50%; border: 2px solid rgba(255,255,255,.5); display: grid; place-items: center; transition: all .3s var(--ease); }
+.src i svg { width: 10px; height: 10px; stroke: #fff; stroke-width: 3.5; fill: none; opacity: 0; transition: opacity .2s; }
+.src.on { background: rgba(255,255,255,.92); color: #1c1b1f; transform: translateX(3px); }
+.src.on i { background: var(--c); border-color: var(--c); }
+.src.on i svg { opacity: 1; }
+
+.widget { position: absolute; right: 22px; top: 50px; width: 290px; height: 396px; border-radius: 18px; padding: 14px; background: #232327; color: #f2f2f2;
+  box-shadow: 0 18px 40px rgba(0,0,0,.35); overflow: hidden; }
+.w-day { font-size: 10px; font-weight: 700; letter-spacing: .04em; color: #ff6a55; }
+.w-date { font-size: 19px; font-weight: 700; letter-spacing: -.01em; }
+.strip { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; margin: 10px 0; padding-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,.08); }
+.strip div { text-align: center; padding: 5px 0; border-radius: 8px; font-size: 12px; font-weight: 600; line-height: 1.2; }
+.strip small { display: block; font-size: 8.5px; color: #8b8b90; }
+.strip .today { background: var(--red); }
+.strip .today small { color: rgba(255,255,255,.85); }
+.w-label { font-size: 10.5px; font-weight: 600; color: #8b8b90; margin-bottom: 4px; }
+.empty { font-size: 12px; color: #6e6e73; transition: opacity .2s; }
+.rows { display: grid; }
+.row { display: grid; grid-template-rows: 0fr; opacity: 0; transition: grid-template-rows .35s var(--ease), opacity .3s; }
+.row > div { overflow: hidden; }
+.row.show { grid-template-rows: 1fr; opacity: 1; }
+.row .in { display: flex; align-items: center; gap: 8px; padding: 4px 6px; border-radius: 6px; font-size: 12.5px; transition: background .4s; }
+.row.flash .in { background: rgba(255,255,255,.1); }
+.row .bar { width: 3px; height: 13px; border-radius: 2px; background: var(--c); margin: 0 5px; flex: none; }
+.row .circ { width: 13px; height: 13px; border-radius: 50%; border: 1.5px solid #8b8b90; flex: none; display: grid; place-items: center; transition: all .25s; }
+.row .circ svg { width: 8px; height: 8px; stroke: #fff; stroke-width: 3.5; fill: none; opacity: 0; }
+.row.done .circ { background: var(--green); border-color: var(--green); }
+.row.done .circ svg { opacity: 1; }
+.row.done .t { text-decoration: line-through; color: #8b8b90; }
+.row .tm { width: 58px; flex: none; color: #8b8b90; font-size: 11px; font-variant-numeric: tabular-nums; }
+.row .t { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; transition: color .3s; }
+
+@media (max-width: 560px) {
+  .desk { height: 520px; }
+  .sources { left: 12px; right: 12px; top: 36px; grid-template-columns: repeat(2, 1fr); }
+  .widget { left: 50%; right: auto; transform: translateX(-50%); top: 128px; width: min(300px, calc(100% - 24px)); height: 380px; }
+  .pop { right: 70px; }
+}
+
+/* Step controls */
+.steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 12px; }
+.step { text-align: left; font: inherit; color: var(--muted); background: none; border: 0; padding: 0; cursor: pointer; }
+.step .track { height: 3px; border-radius: 3px; background: var(--line); overflow: hidden; margin-bottom: 8px; }
+.step .fill { height: 100%; background: var(--red); transform: scaleX(0); transform-origin: left; }
+.step b { display: block; color: var(--ink); font-size: 14px; }
+.step span { font-size: 12.5px; }
+.step:not(.cur) b { color: var(--muted); }
 
 /* Sections */
-section { padding: 110px 0 0; }
-.kicker { color: var(--coral); font-weight: 700; font-size: 13px; letter-spacing: .12em; text-transform: uppercase; }
-h2 { font-size: clamp(30px, 4vw, 44px); letter-spacing: -.03em; line-height: 1.08; margin: 10px 0 14px; }
-.sub { color: var(--muted); max-width: 40em; font-size: 17px; }
-.center { text-align: center; } .center .sub { margin-inline: auto; }
+section { padding: 56px 0; border-top: 1px solid var(--line); }
+h2 { font-size: clamp(24px, 3vw, 32px); letter-spacing: -.02em; line-height: 1.15; margin-bottom: 8px; }
+.sub { color: var(--muted); max-width: 40em; }
+.works { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 24px; }
+@media (max-width: 760px) { .works { grid-template-columns: 1fr; } }
+.group { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 18px; }
+.group h3 { font-size: 12px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin-bottom: 10px; }
+.group ul { list-style: none; display: flex; flex-wrap: wrap; gap: 6px; }
+.group li { font-size: 14px; font-weight: 600; padding: 5px 10px; border-radius: 8px; background: var(--paper); }
+.why { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-top: 8px; }
+@media (max-width: 760px) { .why { grid-template-columns: 1fr; } }
+.why h3 { font-size: 17px; margin-bottom: 4px; }
+.why p { color: var(--muted); font-size: 15px; }
 
-/* Integrations marquee */
-.marquee { margin-top: 40px; overflow: hidden; mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent);
-  -webkit-mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent); }
-.track { display: flex; gap: 12px; width: max-content; animation: scroll 40s linear infinite; padding: 6px 0; }
-.track.rev { animation-direction: reverse; animation-duration: 46s; margin-top: 12px; }
-.marquee:hover .track { animation-play-state: paused; }
-@keyframes scroll { to { transform: translateX(-50%); } }
-.chip { padding: 12px 18px; border-radius: 14px; background: var(--card); border: 1px solid var(--line); white-space: nowrap; font-weight: 600; font-size: 15px;
-  display: flex; gap: 10px; align-items: center; }
-.chip small { color: var(--muted); font-weight: 500; font-size: 12px; }
-.chip i { width: 9px; height: 9px; border-radius: 3px; display: inline-block; }
+.install .term { display: flex; align-items: center; gap: 10px; margin-top: 20px; padding: 10px 10px 10px 16px; border-radius: 12px; background: #1c1b1f; color: #e8e6ef;
+  font: 13px/1.4 ui-monospace, "SF Mono", Menlo, monospace; }
+.term code { flex: 1; overflow-x: auto; white-space: nowrap; scrollbar-width: none; }
+.term code::-webkit-scrollbar { display: none; }
+.term .btn { height: 32px; background: #2f2e34; color: #fff; border-color: #2f2e34; flex: none; }
+.install .more { margin-top: 12px; display: flex; gap: 10px; flex-wrap: wrap; align-items: center; font-size: 14px; color: var(--muted); }
 
-/* Feature grid */
-.grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 44px; }
-@media (max-width: 900px) { .grid { grid-template-columns: 1fr 1fr; } }
-@media (max-width: 600px) { .grid { grid-template-columns: 1fr; } }
-.card { position: relative; padding: 26px; border-radius: var(--radius); background: var(--card); border: 1px solid var(--line); overflow: hidden;
-  transition: transform .5s var(--ease), border-color .3s; }
-.card:hover { transform: translateY(-4px); border-color: rgba(255,255,255,.2); }
-.card::after { content: ""; position: absolute; inset: 0; background: radial-gradient(400px circle at var(--mx, 50%) var(--my, 0%), rgba(255,255,255,.08), transparent 40%);
-  opacity: 0; transition: opacity .3s; pointer-events: none; }
-.card:hover::after { opacity: 1; }
-.card .ic { width: 42px; height: 42px; border-radius: 12px; display: grid; place-items: center; margin-bottom: 16px; }
-.card .ic svg { width: 22px; height: 22px; stroke: #fff; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-.card h3 { font-size: 18px; letter-spacing: -.01em; margin-bottom: 6px; }
-.card p { color: var(--muted); font-size: 14.5px; }
-
-/* Split showcase */
-.split { display: grid; grid-template-columns: 1fr 1fr; gap: 56px; align-items: center; margin-top: 30px; }
-@media (max-width: 900px) { .split { grid-template-columns: 1fr; } }
-.shot { width: min(440px, 100%); justify-self: center; border-radius: 20px; box-shadow: 0 40px 80px -30px rgba(0,0,0,.85); border: 1px solid var(--line); }
-.steps { list-style: none; margin-top: 24px; display: grid; gap: 14px; counter-reset: s; }
-.steps li { display: flex; gap: 14px; align-items: flex-start; color: var(--muted); }
-.steps li::before { counter-increment: s; content: counter(s); flex: none; width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center;
-  background: rgba(255,90,95,.15); color: var(--coral); font-weight: 700; font-size: 13px; }
-.steps b { color: var(--ink); font-weight: 600; }
-
-/* Privacy band */
-.band { margin-top: 30px; padding: 40px; border-radius: 28px; border: 1px solid var(--line);
-  background: linear-gradient(135deg, rgba(79,70,229,.25), rgba(139,92,246,.18) 50%, rgba(255,90,95,.18)); display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; }
-@media (max-width: 900px) { .band { grid-template-columns: 1fr 1fr; padding: 28px; } }
-.band b { display: block; font-size: 26px; letter-spacing: -.02em; }
-.band span { color: var(--muted); font-size: 14px; }
-
-/* FAQ */
-.faq { max-width: 780px; margin: 40px auto 0; display: grid; gap: 10px; }
-details { border: 1px solid var(--line); border-radius: 16px; background: var(--card); padding: 0 20px; transition: background .3s; }
-details[open] { background: rgba(255,255,255,.07); }
-summary { cursor: pointer; list-style: none; padding: 18px 0; font-weight: 600; display: flex; justify-content: space-between; gap: 12px; }
+.faq { margin-top: 16px; max-width: 760px; }
+details { border-bottom: 1px solid var(--line); }
+summary { cursor: pointer; list-style: none; padding: 14px 0; font-weight: 600; display: flex; justify-content: space-between; }
 summary::-webkit-details-marker { display: none; }
-summary::after { content: "+"; color: var(--muted); font-size: 20px; line-height: 1; transition: transform .35s var(--ease); }
-details[open] summary::after { transform: rotate(45deg); }
-details p { color: var(--muted); padding-bottom: 18px; font-size: 15px; }
+summary::after { content: "+"; color: var(--muted); }
+details[open] summary::after { content: "–"; }
+details p { color: var(--muted); padding-bottom: 14px; }
 
-/* Final CTA + footer */
-.final { margin: 120px auto 0; text-align: center; padding: 64px 24px; border-radius: 32px; border: 1px solid var(--line); background: var(--card); position: relative; overflow: hidden; }
-.final img { width: 96px; margin: 0 auto 18px; animation: float 6s ease-in-out infinite; }
-footer { margin-top: 80px; padding: 36px 0 48px; border-top: 1px solid var(--line); color: var(--muted); font-size: 13px; }
-footer .row { display: flex; justify-content: space-between; gap: 20px; flex-wrap: wrap; }
-footer a { color: var(--muted); }
-footer .legal { margin-top: 18px; font-size: 12px; opacity: .8; max-width: 70em; }
+footer { padding: 32px 0 48px; border-top: 1px solid var(--line); font-size: 13px; color: var(--muted); }
+footer .row2 { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+footer .legal { margin-top: 12px; font-size: 12px; max-width: 72em; }
 
-/* Scroll reveal */
-.reveal { opacity: 0; transform: translateY(28px); transition: opacity .9s var(--ease), transform .9s var(--ease); }
-.reveal.in { opacity: 1; transform: none; }
-.reveal.d1 { transition-delay: .08s; } .reveal.d2 { transition-delay: .16s; } .reveal.d3 { transition-delay: .24s; }
-
-.toast { position: fixed; bottom: 24px; left: 50%; transform: translate(-50%, 20px); opacity: 0; background: #1f2147; border: 1px solid var(--line);
-  padding: 10px 16px; border-radius: 12px; font-size: 14px; transition: all .4s var(--ease); pointer-events: none; }
-.toast.show { opacity: 1; transform: translate(-50%, 0); }
-
-@media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after { animation: none !important; transition-duration: .01ms !important; }
-  .reveal { opacity: 1; transform: none; }
-}
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; animation: none !important; } }
 </style>
 </head>
 <body>
-<div class="orbs" aria-hidden="true"><div class="orb a"></div><div class="orb b"></div><div class="orb c"></div></div>
-
-<nav>
-  <div class="wrap">
-    <a class="brand" href="#"><img src="images/icon.png" alt="" width="34" height="34">UMST</a>
-    <div class="links">
-      <a class="hide-sm" href="#features">Features</a>
-      <a class="hide-sm" href="#integrations">Integrations</a>
-      <a class="hide-sm" href="#faq">FAQ</a>
-      <a href="https://github.com/nicoleyangcoding/UMST-UltimateMacSchedulingTool">GitHub</a>
-      <a class="btn small primary" href="#install">Get UMST</a>
-    </div>
-  </div>
-</nav>
-
-<main>
-<header class="wrap hero">
-  <div>
-    <span class="eyebrow reveal"><span class="dot"></span>Free &amp; open source · macOS 14+</span>
-    <h1 class="reveal d1">Your whole schedule, <span class="grad">right on your desktop.</span></h1>
-    <p class="lede reveal d2">UMST is a calendar that lives on your Mac desktop. Classes, Canvas deadlines, meetings, reminders and to-dos from every app you use, in one glance. No subscription, no account, no tracking.</p>
-    <div class="cta reveal d3">
-      <a class="btn primary" href="#install">Install free</a>
-      <a class="btn" href="https://github.com/nicoleyangcoding/UMST-UltimateMacSchedulingTool">View on GitHub</a>
-    </div>
-    <div class="badges reveal d3"><span>Apple silicon &amp; Intel</span><span>Secrets in your Keychain</span><span>MIT licensed</span></div>
-  </div>
-  <div class="stage reveal d2">
-    <div class="glow" id="glow"></div>
-    <div class="device" id="device">
-      <img class="on" src="images/widget-glass.png" alt="UMST desktop calendar in the Glass theme" data-t="glass">
-      <img src="images/widget-midnight.png" alt="UMST desktop calendar in the Midnight theme" data-t="midnight" loading="lazy">
-      <img src="images/widget-sunset.png" alt="UMST desktop calendar in the Sunset theme" data-t="sunset" loading="lazy">
-      <img src="images/widget-forest.png" alt="UMST desktop calendar in the Forest theme" data-t="forest" loading="lazy">
-      <img src="images/widget-lavender.png" alt="UMST desktop calendar in the Lavender theme" data-t="lavender" loading="lazy">
-      <img src="images/widget-graphite.png" alt="UMST desktop calendar in the Graphite theme" data-t="graphite" loading="lazy">
-    </div>
-    <div class="themes" role="group" aria-label="Preview themes">
-      <button aria-pressed="true" data-t="glass" data-c="#ff5a5f"><i style="background:#ff453a"></i>Glass</button>
-      <button aria-pressed="false" data-t="midnight" data-c="#6366f1"><i style="background:#6499ff"></i>Midnight</button>
-      <button aria-pressed="false" data-t="sunset" data-c="#fb7185"><i style="background:#ff7350"></i>Sunset</button>
-      <button aria-pressed="false" data-t="forest" data-c="#22c55e"><i style="background:#4dcc80"></i>Forest</button>
-      <button aria-pressed="false" data-t="lavender" data-c="#a78bfa"><i style="background:#8c66f2"></i>Lavender</button>
-      <button aria-pressed="false" data-t="graphite" data-c="#9ca3af"><i style="background:#d9d9d9"></i>Graphite</button>
-    </div>
-  </div>
-</header>
-
-<div class="wrap install reveal" id="install">
-  <div class="term">
-    <span class="p">$</span>
-    <code id="cmd">curl -fsSL https://raw.githubusercontent.com/nicoleyangcoding/UMST-UltimateMacSchedulingTool/main/install.sh | zsh</code>
-    <button class="btn small" id="copy" type="button">Copy</button>
-  </div>
-  <p>Paste into Terminal. It downloads the latest release, checks its checksum and opens UMST. Or <a href="https://github.com/nicoleyangcoding/UMST-UltimateMacSchedulingTool/releases/latest">download the .zip</a>.</p>
-</div>
-
-<section id="integrations">
-  <div class="wrap center">
-    <div class="kicker reveal">Integrations</div>
-    <h2 class="reveal d1">Everything you check, in one place.</h2>
-    <p class="sub reveal d2">Your Mac's accounts, your school's learning platform and your task apps, side by side. Setup walks you through each one in a couple of clicks.</p>
-  </div>
-  <div class="marquee reveal" aria-label="Supported services">
-    <div class="track">
-      <span class="chip"><i style="background:#4285f4"></i>Google Calendar</span><span class="chip"><i style="background:#ea4335"></i>Gmail invites</span>
-      <span class="chip"><i style="background:#0a84ff"></i>iCloud</span><span class="chip"><i style="background:#0078d4"></i>Outlook &amp; Microsoft 365</span>
-      <span class="chip"><i style="background:#ff9f0a"></i>Apple Reminders</span><span class="chip"><i style="background:#5f6368"></i>Exchange</span>
-      <span class="chip"><i style="background:#7b2cbf"></i>Yahoo</span><span class="chip"><i style="background:#0f9d58"></i>Google Classroom <small>via Google</small></span>
-      <span class="chip"><i style="background:#4285f4"></i>Google Calendar</span><span class="chip"><i style="background:#ea4335"></i>Gmail invites</span>
-      <span class="chip"><i style="background:#0a84ff"></i>iCloud</span><span class="chip"><i style="background:#0078d4"></i>Outlook &amp; Microsoft 365</span>
-      <span class="chip"><i style="background:#ff9f0a"></i>Apple Reminders</span><span class="chip"><i style="background:#5f6368"></i>Exchange</span>
-      <span class="chip"><i style="background:#7b2cbf"></i>Yahoo</span><span class="chip"><i style="background:#0f9d58"></i>Google Classroom <small>via Google</small></span>
-    </div>
-    <div class="track rev">
-      <span class="chip"><i style="background:#e2412d"></i>Canvas</span><span class="chip"><i style="background:#262626"></i>Blackboard</span>
-      <span class="chip"><i style="background:#f58025"></i>Brightspace (D2L)</span><span class="chip"><i style="background:#f98012"></i>Moodle</span>
-      <span class="chip"><i style="background:#2c7be5"></i>Schoology</span><span class="chip"><i style="background:#e44332"></i>Todoist</span>
-      <span class="chip"><i style="background:#f06a6a"></i>Asana</span><span class="chip"><i style="background:#0079bf"></i>Trello</span>
-      <span class="chip"><i style="background:#8e8e93"></i>Any iCal link</span>
-      <span class="chip"><i style="background:#e2412d"></i>Canvas</span><span class="chip"><i style="background:#262626"></i>Blackboard</span>
-      <span class="chip"><i style="background:#f58025"></i>Brightspace (D2L)</span><span class="chip"><i style="background:#f98012"></i>Moodle</span>
-      <span class="chip"><i style="background:#2c7be5"></i>Schoology</span><span class="chip"><i style="background:#e44332"></i>Todoist</span>
-      <span class="chip"><i style="background:#f06a6a"></i>Asana</span><span class="chip"><i style="background:#0079bf"></i>Trello</span>
-      <span class="chip"><i style="background:#8e8e93"></i>Any iCal link</span>
-    </div>
-  </div>
-</section>
-
-<section id="features">
-  <div class="wrap">
-    <div class="kicker reveal">Features</div>
-    <h2 class="reveal d1">Small, quiet and always there.</h2>
-    <p class="sub reveal d2">UMST sits on your desktop behind your windows, so your day is the first thing you see and never in the way.</p>
-    <div class="grid">
-      <article class="card reveal"><div class="ic" style="background:linear-gradient(135deg,#ff5a5f,#e2412d)"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></svg></div>
-        <h3>Two weeks at a glance</h3><p>A week strip and agenda for the next 14 days. Tap any day to jump to it.</p></article>
-      <article class="card reveal d1"><div class="ic" style="background:linear-gradient(135deg,#6366f1,#8b5cf6)"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></div>
-        <h3>Quick add from the menu bar</h3><p>Click, type, press Return. To-dos land on today and clear themselves at midnight.</p></article>
-      <article class="card reveal d2"><div class="ic" style="background:linear-gradient(135deg,#30a46c,#0f766e)"><svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></div>
-        <h3>Check things off</h3><p>Finish to-dos and Apple Reminders right on the calendar. Reminders update everywhere.</p></article>
-      <article class="card reveal"><div class="ic" style="background:linear-gradient(135deg,#f59e0b,#ef4444)"><svg viewBox="0 0 24 24"><path d="M22 10 12 5 2 10l10 5 10-5z"/><path d="M6 12v5c3 2 9 2 12 0v-5"/></svg></div>
-        <h3>Built for students</h3><p>Canvas, Blackboard, Brightspace, Moodle and Schoology deadlines next to your classes and plans.</p></article>
-      <article class="card reveal d1"><div class="ic" style="background:linear-gradient(135deg,#a78bfa,#ec4899)"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 0 0 18z" fill="#fff"/></svg></div>
-        <h3>Six themes</h3><p>Glass, Midnight, Sunset, Forest, Lavender and Graphite. Smooth animations you can turn off.</p></article>
-      <article class="card reveal d2"><div class="ic" style="background:linear-gradient(135deg,#0ea5e9,#4f46e5)"><svg viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/></svg></div>
-        <h3>Always up to date</h3><p>Refreshes hourly, on wake, at midnight and the moment Calendar changes. Works offline from cache.</p></article>
-    </div>
-  </div>
-</section>
-
-<section>
-  <div class="wrap split">
-    <div>
-      <div class="kicker reveal">Setup in a minute</div>
-      <h2 class="reveal d1">Connect a service in three steps.</h2>
-      <ol class="steps reveal d2">
-        <li><span><b>Install</b> with one Terminal command, or download the .zip.</span></li>
-        <li><span><b>Allow Calendar access</b> to show the Google, iCloud and Outlook accounts already on your Mac.</span></li>
-        <li><span><b>Connect a Service</b>, pick Canvas, Todoist or any other, and paste the link it tells you where to find.</span></li>
-      </ol>
-    </div>
-    <img class="shot reveal d1" src="images/settings-accounts.png" alt="UMST account settings with connected services" loading="lazy" width="1040" height="1216">
-  </div>
-</section>
-
-<section>
-  <div class="wrap">
-    <div class="center">
-      <div class="kicker reveal">Privacy</div>
-      <h2 class="reveal d1">Your calendar stays yours.</h2>
-      <p class="sub reveal d2">UMST talks only to the services you add, directly from your Mac. There's nothing to sign up for and nothing sent to us.</p>
-    </div>
-    <div class="band reveal">
-      <div><b>0</b><span>accounts, ads or analytics</span></div>
-      <div><b>Keychain</b><span>stores every link and token</span></div>
-      <div><b>HTTPS</b><span>only, no cookies or cache</span></div>
-      <div><b>MIT</b><span>open source, read every line</span></div>
-    </div>
-  </div>
-</section>
-
-<section id="faq">
-  <div class="wrap">
-    <div class="center">
-      <div class="kicker reveal">FAQ</div>
-      <h2 class="reveal d1">Questions</h2>
-    </div>
-    <div class="faq">
-      <details class="reveal"><summary>Is UMST really free?</summary><p>Yes. UMST is free and open source under the MIT license. There's no paid tier, subscription or account.</p></details>
-      <details class="reveal"><summary>How do I get my Canvas deadlines on my Mac desktop?</summary><p>In Canvas, open Calendar and click Calendar Feed, then copy the link. In UMST choose Connect a Service → Canvas and paste it. Your assignments and due dates show up next to your other calendars.</p></details>
-      <details class="reveal"><summary>Does it work with Google Calendar and Gmail?</summary><p>Yes. Add your Google account in System Settings → Internet Accounts with Calendars turned on, and UMST shows it, including invites from Gmail. You can also paste Google's secret iCal address.</p></details>
-      <details class="reveal"><summary>Which Macs are supported?</summary><p>Any Mac running macOS 14 Sonoma or later, with Apple silicon or Intel.</p></details>
-      <details class="reveal"><summary>Why does macOS say UMST is from an unidentified developer?</summary><p>UMST isn't notarized by Apple yet. The install command handles this for you. If you download the .zip instead, open System Settings → Privacy &amp; Security and click Open Anyway the first time.</p></details>
-      <details class="reveal"><summary>How do I uninstall it?</summary><p>Run the uninstall command in the README. It removes the app, its settings, its data, its Keychain items and its login item.</p></details>
-    </div>
-  </div>
-</section>
-
 <div class="wrap">
-  <div class="final reveal">
-    <img src="images/icon.png" alt="UMST app icon" width="96" height="96" loading="lazy">
-    <h2>See your whole week before you open a single app.</h2>
-    <p class="sub" style="margin:0 auto 26px">Free for Mac. Takes under a minute to install.</p>
-    <a class="btn primary" href="#install">Install UMST</a>
-  </div>
-</div>
-</main>
+  <header class="top">
+    <a class="brand" href="./"><img src="images/icon-64.png" alt="" width="30" height="30">UMST</a>
+    <div class="actions">
+      <a class="btn hide-xs" href="https://github.com/nicoleyangcoding/UMST-UltimateMacSchedulingTool">
+        <svg viewBox="0 0 24 24" fill="#e3b341"><path d="M12 2.5l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.4l-5.9 3.1 1.2-6.5L2.5 9.4l6.6-.9z"/></svg>Star on GitHub</a>
+      <a class="btn red" href="#install">Install free</a>
+    </div>
+  </header>
 
-<footer>
-  <div class="wrap">
-    <div class="row">
+  <main>
+    <div class="hero">
+      <div>
+        <h1>Every deadline and meeting, <em>on your Mac desktop.</em></h1>
+        <p class="lede">UMST pulls Canvas, Google, Outlook, Reminders, Todoist and more into one list that sits on your desktop. Free.</p>
+        <div class="cta">
+          <a class="btn red" href="#install">Install free</a>
+          <a class="btn" href="https://github.com/nicoleyangcoding/UMST-UltimateMacSchedulingTool">
+            <svg viewBox="0 0 24 24" fill="#e3b341"><path d="M12 2.5l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.4l-5.9 3.1 1.2-6.5L2.5 9.4l6.6-.9z"/></svg>Star on GitHub</a>
+        </div>
+        <div class="facts"><span>No account</span><span>No tracking</span><span>macOS 14+</span></div>
+      </div>
+
+      <div class="demo" aria-label="Animated demo of UMST">
+        <div class="desk" id="desk">
+          <div class="menubar">
+            <span class="mb-icon" id="mb"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="16" height="15" rx="3"/><path d="M3 10h16M8 3v4M14 3v4M19 15v6M16 18h6"/></svg></span>
+            <span id="clock">Wed 9:41 AM</span>
+          </div>
+          <div class="pop" id="pop">
+            <div class="field"><span id="typed"></span><span class="caret"></span><span class="ph" id="ph">Add to today…</span></div>
+            <div class="chips"><b>Today</b><span>Tomorrow</span><kbd id="enter">↩ Return</kbd></div>
+          </div>
+          <div class="sources" id="sources">
+            <div class="src" data-s="canvas" style="--c:var(--red)"><i><svg viewBox="0 0 24 24"><path d="M5 12l5 5 9-10"/></svg></i>Canvas</div>
+            <div class="src" data-s="google" style="--c:var(--blue)"><i><svg viewBox="0 0 24 24"><path d="M5 12l5 5 9-10"/></svg></i>Google Calendar</div>
+            <div class="src" data-s="todoist" style="--c:var(--purple)"><i><svg viewBox="0 0 24 24"><path d="M5 12l5 5 9-10"/></svg></i>Todoist</div>
+            <div class="src" data-s="rem" style="--c:var(--orange)"><i><svg viewBox="0 0 24 24"><path d="M5 12l5 5 9-10"/></svg></i>Reminders</div>
+          </div>
+          <div class="widget">
+            <div class="w-day" id="wday">WEDNESDAY</div>
+            <div class="w-date" id="wdate">October 28</div>
+            <div class="strip" id="strip"></div>
+            <div class="w-label">Today</div>
+            <div class="empty" id="empty">Nothing yet. Connect something.</div>
+            <div class="rows" id="rows"></div>
+          </div>
+        </div>
+        <div class="steps" id="steps">
+          <button class="step" data-i="0"><div class="track"><div class="fill"></div></div><b>1. Connect</b><span>School, calendars, tasks</span></button>
+          <button class="step" data-i="1"><div class="track"><div class="fill"></div></div><b>2. Quick add</b><span>From the menu bar</span></button>
+          <button class="step" data-i="2"><div class="track"><div class="fill"></div></div><b>3. Check off</b><span>Right on the desktop</span></button>
+        </div>
+      </div>
+    </div>
+
+    <section>
+      <h2>Works with what you already use</h2>
+      <p class="sub">Accounts on your Mac show up automatically. Everything else is a copy-paste link, and UMST tells you exactly where to find it.</p>
+      <div class="works">
+        <div class="group"><h3>School</h3><ul><li>Canvas</li><li>Blackboard</li><li>Brightspace (D2L)</li><li>Moodle</li><li>Schoology</li><li>Google Classroom</li></ul></div>
+        <div class="group"><h3>Calendars</h3><ul><li>Google Calendar</li><li>Gmail invites</li><li>iCloud</li><li>Outlook / Microsoft 365</li><li>Exchange</li><li>Yahoo</li></ul></div>
+        <div class="group"><h3>Tasks &amp; more</h3><ul><li>Apple Reminders</li><li>Todoist</li><li>Asana</li><li>Trello</li><li>Any iCal link</li></ul></div>
+      </div>
+    </section>
+
+    <section>
+      <div class="why">
+        <div><h3>Always in view</h3><p>It lives on your desktop behind your windows. Glance at it, never open it.</p></div>
+        <div><h3>Private by design</h3><p>No account, no analytics. Links and tokens stay in your Mac's Keychain.</p></div>
+        <div><h3>Free, for real</h3><p>Open source under the MIT license. Native Swift, Apple silicon and Intel.</p></div>
+      </div>
+    </section>
+
+    <section class="install" id="install">
+      <h2>Install in one line</h2>
+      <p class="sub">Paste this into Terminal. It downloads the latest release, checks it and opens UMST.</p>
+      <div class="term">
+        <code id="cmd">curl -fsSL https://raw.githubusercontent.com/nicoleyangcoding/UMST-UltimateMacSchedulingTool/main/install.sh | zsh</code>
+        <button class="btn" id="copy" type="button">Copy</button>
+      </div>
+      <div class="more">
+        <a href="https://github.com/nicoleyangcoding/UMST-UltimateMacSchedulingTool/releases/latest">Or download the .zip</a> ·
+        <a class="btn" href="https://github.com/nicoleyangcoding/UMST-UltimateMacSchedulingTool">
+          <svg viewBox="0 0 24 24" fill="#e3b341"><path d="M12 2.5l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.4l-5.9 3.1 1.2-6.5L2.5 9.4l6.6-.9z"/></svg>Star on GitHub</a>
+      </div>
+    </section>
+
+    <section>
+      <h2>Questions</h2>
+      <div class="faq">
+        <details><summary>Is it really free?</summary><p>Yes. No paid tier, no subscription, no account. The code is open source under the MIT license.</p></details>
+        <details><summary>How do I get Canvas deadlines on my desktop?</summary><p>In Canvas open Calendar → Calendar Feed and copy the link. In UMST pick Connect a Service → Canvas and paste it.</p></details>
+        <details><summary>Does it work with Google Calendar and Gmail?</summary><p>Yes. Add your Google account in System Settings → Internet Accounts with Calendars on, and it shows up, invites from Gmail included.</p></details>
+        <details><summary>macOS says it's from an unidentified developer?</summary><p>UMST isn't notarized by Apple yet. The install command handles it. If you download the .zip, open System Settings → Privacy &amp; Security → Open Anyway once.</p></details>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="row2">
       <span>© 2026 Nicole Yang · <a href="https://github.com/nicoleyangcoding/UMST-UltimateMacSchedulingTool/blob/main/LICENSE">MIT License</a></span>
-      <span><a href="https://github.com/nicoleyangcoding/UMST-UltimateMacSchedulingTool/blob/main/PRIVACY.md">Privacy</a> ·
-        <a href="https://github.com/nicoleyangcoding/UMST-UltimateMacSchedulingTool/blob/main/SECURITY.md">Security</a> ·
+      <span><a href="legal.html">Terms &amp; disclaimer</a> · <a href="https://github.com/nicoleyangcoding/UMST-UltimateMacSchedulingTool/blob/main/PRIVACY.md">Privacy</a> ·
         <a href="https://github.com/nicoleyangcoding/UMST-UltimateMacSchedulingTool/issues">Report an issue</a></span>
     </div>
-    <p class="legal">UMST is an independent open-source project, provided "as is" without warranty. It is not affiliated with, endorsed by or sponsored by Apple, Google, Microsoft, Instructure, Anthology, D2L, Moodle, PowerSchool, Doist, Asana, Atlassian or any other company named on this page. Product names are trademarks of their respective owners and are used only to describe compatibility. Mac and macOS are trademarks of Apple Inc. This site uses no cookies, analytics or third-party scripts.</p>
-  </div>
-</footer>
-
-<div class="toast" id="toast" role="status">Copied. Paste it into Terminal.</div>
+    <p class="legal">UMST is free software provided "as is", without warranty of any kind; see the <a href="legal.html">terms</a>. It is an independent project, not affiliated with or endorsed by Apple, Google, Microsoft, Instructure, Anthology, D2L, Moodle, PowerSchool, Doist, Asana, Atlassian or any other company named here. Product names are trademarks of their respective owners, used only to describe compatibility. Mac and macOS are trademarks of Apple Inc. The demo above uses made-up sample data. This site uses no cookies, analytics or third-party scripts.</p>
+  </footer>
+</div>
 
 <script>
 (() => {
-  // Scroll reveal
-  const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } }),
-    { threshold: .12, rootMargin: '0px 0px -40px 0px' });
-  document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+  // Real date in the demo widget and menu bar
+  const now = new Date();
+  document.getElementById('wday').textContent = now.toLocaleDateString('en-US', { weekday: 'long' }).toUpperCase();
+  document.getElementById('wdate').textContent = now.toLocaleDateString('en-US', { month: 'long', day: 'numeric' });
+  document.getElementById('clock').textContent = now.toLocaleDateString('en-US', { weekday: 'short' }) + ' 9:41 AM';
+  document.getElementById('strip').innerHTML = [...Array(7)].map((_, i) => {
+    const d = new Date(now); d.setDate(now.getDate() + i);
+    return `<div class="${i ? '' : 'today'}"><small>${d.toLocaleDateString('en-US', { weekday: 'narrow' })}</small>${d.getDate()}</div>`;
+  }).join('');
 
-  // Theme switcher (auto-cycles until someone picks one)
-  const imgs = [...document.querySelectorAll('#device img')], btns = [...document.querySelectorAll('.themes button')], glow = document.getElementById('glow');
-  let i = 0, auto = !matchMedia('(prefers-reduced-motion: reduce)').matches;
-  function show(t) {
-    imgs.forEach(im => im.classList.toggle('on', im.dataset.t === t));
-    btns.forEach(b => { const on = b.dataset.t === t; b.setAttribute('aria-pressed', on); if (on) glow.style.setProperty('--accent', b.dataset.c); });
-    i = btns.findIndex(b => b.dataset.t === t);
+  // Agenda rows in display order: [id, source, time, title]
+  const rows = [
+    ['todo', 'todo', 'To-do', 'Call Mom'],
+    ['r1', 'rem', 'Reminder', 'Email advisor about spring classes'],
+    ['t1', 'todoist', 'All day', 'Renew library books'],
+    ['g1', 'google', '9:30 AM', 'Team standup'],
+    ['c1', 'canvas', '11:00 AM', 'Organic Chemistry lecture'],
+    ['g2', 'google', '12:30 PM', 'Lunch with Sam'],
+    ['c2', 'canvas', '11:59 PM', 'Problem Set 6 due'],
+  ];
+  const color = { canvas: 'var(--red)', google: 'var(--blue)', todoist: 'var(--purple)', rem: 'var(--orange)' };
+  const check = '<svg viewBox="0 0 24 24"><path d="M5 12l5 5 9-10"/></svg>';
+  const box = document.getElementById('rows');
+  box.innerHTML = rows.map(([id, s, tm, t]) => {
+    const lead = (s === 'todo' || s === 'rem') ? `<span class="circ">${check}</span>` : `<span class="bar" style="--c:${color[s]}"></span>`;
+    return `<div class="row" data-id="${id}" data-s="${s}"><div><div class="in">${lead}<span class="tm">${tm}</span><span class="t">${t}</span></div></div></div>`;
+  }).join('');
+
+  const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
+  const row = id => $(`.row[data-id="${id}"]`);
+  const pop = $('#pop'), mb = $('#mb'), typed = $('#typed'), ph = $('#ph'), enter = $('#enter'), empty = $('#empty');
+  const fills = $$('.step .fill'), stepBtns = $$('.step');
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  let run = 0;
+  const sleep = (ms, token) => new Promise((ok, no) => setTimeout(() => token === run ? ok() : no('stop'), ms));
+  const refreshEmpty = () => { empty.style.opacity = $$('.row.show').length ? 0 : 1; empty.style.display = $$('.row.show').length ? 'none' : ''; };
+
+  function reset() {
+    $$('.src').forEach(s => s.classList.remove('on'));
+    $$('.row').forEach(r => r.classList.remove('show', 'done', 'flash'));
+    pop.classList.remove('open'); mb.classList.remove('active'); typed.textContent = ''; ph.style.display = '';
+    refreshEmpty();
   }
-  btns.forEach(b => b.addEventListener('click', () => { auto = false; show(b.dataset.t); }));
-  setInterval(() => { if (auto && !document.hidden) show(btns[(i + 1) % btns.length].dataset.t); }, 3200);
+  // End state of each step, for jumping straight to a later one
+  function connectedAll() { $$('.src').forEach(s => s.classList.add('on')); $$('.row').forEach(r => { if (r.dataset.s !== 'todo') r.classList.add('show'); }); refreshEmpty(); }
 
-  // Gentle 3D tilt toward the pointer
-  const dev = document.getElementById('device'), stage = dev.parentElement;
-  if (matchMedia('(hover: hover)').matches) {
-    stage.addEventListener('pointermove', e => {
-      const r = stage.getBoundingClientRect(), x = (e.clientX - r.left) / r.width - .5, y = (e.clientY - r.top) / r.height - .5;
-      dev.style.transform = `rotateY(${x * 14}deg) rotateX(${-y * 12}deg)`;
+  function progress(i, ms) {
+    stepBtns.forEach((b, k) => b.classList.toggle('cur', k === i));
+    fills.forEach((f, k) => {
+      f.style.transition = 'none';
+      f.style.transform = `scaleX(${k < i ? 1 : 0})`;
+      if (k === i) { f.getBoundingClientRect(); f.style.transition = `transform ${ms}ms linear`; f.style.transform = 'scaleX(1)'; }
     });
-    stage.addEventListener('pointerleave', () => { dev.style.transform = ''; });
   }
 
-  // Card spotlight
-  document.querySelectorAll('.card').forEach(c => c.addEventListener('pointermove', e => {
-    const r = c.getBoundingClientRect();
-    c.style.setProperty('--mx', (e.clientX - r.left) + 'px'); c.style.setProperty('--my', (e.clientY - r.top) + 'px');
+  // Whole loop is about 6 seconds
+  async function step0(tk) {
+    progress(0, 1700);
+    for (const s of ['canvas', 'google', 'todoist', 'rem']) {
+      await sleep(140, tk);
+      $(`.src[data-s="${s}"]`).classList.add('on');
+      for (const r of $$(`.row[data-s="${s}"]`)) { await sleep(110, tk); r.classList.add('show'); refreshEmpty(); }
+    }
+    await sleep(350, tk);
+  }
+  async function step1(tk) {
+    progress(1, 2000);
+    await sleep(120, tk);
+    mb.classList.add('active'); pop.classList.add('open');
+    await sleep(250, tk);
+    ph.style.display = 'none';
+    for (const ch of 'Call Mom') { typed.textContent += ch; await sleep(45, tk); }
+    await sleep(200, tk);
+    enter.classList.add('hit'); await sleep(120, tk); enter.classList.remove('hit');
+    pop.classList.remove('open'); mb.classList.remove('active');
+    const r = row('todo'); r.classList.add('show', 'flash');
+    await sleep(500, tk); r.classList.remove('flash');
+    await sleep(350, tk);
+    typed.textContent = ''; ph.style.display = '';
+  }
+  async function step2(tk) {
+    progress(2, 1300);
+    await sleep(300, tk);
+    row('todo').classList.add('done');
+    await sleep(650, tk);
+    row('todo').classList.remove('show');
+    await sleep(350, tk);
+  }
+  const steps = [step0, step1, step2];
+
+  async function play(from = 0) {
+    const tk = ++run;
+    reset();
+    if (from > 0) connectedAll();
+    try {
+      for (let i = from; ; i = (i + 1) % 3) {
+        if (i === 0 && from !== 0) { await sleep(700, tk); reset(); }
+        from = 0;
+        await steps[i](tk);
+        if (i === 2) { await sleep(700, tk); reset(); }
+      }
+    } catch (_) { /* replaced by a newer run */ }
+  }
+
+  stepBtns.forEach(b => b.addEventListener('click', () => {
+    const i = +b.dataset.i;
+    if (reduce) { showStatic(i); return; }
+    play(i);
   }));
 
+  function showStatic(i) {
+    run++; reset(); connectedAll();
+    stepBtns.forEach((b, k) => b.classList.toggle('cur', k === i));
+    fills.forEach((f, k) => { f.style.transform = `scaleX(${k <= i ? 1 : 0})`; });
+    if (i >= 1) row('todo').classList.add('show');
+    if (i === 1) { pop.classList.add('open'); mb.classList.add('active'); ph.style.display = 'none'; typed.textContent = 'Call Mom'; }
+    if (i === 2) row('todo').classList.add('done');
+    refreshEmpty();
+  }
+
+  if (reduce) { showStatic(0); }
+  else {
+    // Only animate while the demo is on screen and the tab is visible
+    let visible = false;
+    new IntersectionObserver(([e]) => {
+      if (e.isIntersecting && !visible) { visible = true; play(0); }
+      else if (!e.isIntersecting && visible) { visible = false; run++; }
+    }, { threshold: .25 }).observe(document.getElementById('desk'));
+    document.addEventListener('visibilitychange', () => { if (document.hidden) run++; else if (visible) play(0); });
+  }
+
   // Copy install command
-  const toast = document.getElementById('toast');
-  document.getElementById('copy').addEventListener('click', async () => {
-    try { await navigator.clipboard.writeText(document.getElementById('cmd').textContent); } catch (_) {
-      const r = document.createRange(); r.selectNodeContents(document.getElementById('cmd'));
-      const s = getSelection(); s.removeAllRanges(); s.addRange(r); document.execCommand('copy');
-    }
-    toast.classList.add('show'); setTimeout(() => toast.classList.remove('show'), 1800);
+  const copy = document.getElementById('copy');
+  copy.addEventListener('click', async () => {
+    try { await navigator.clipboard.writeText(document.getElementById('cmd').textContent); copy.textContent = 'Copied ✓'; }
+    catch (_) { copy.textContent = 'Select & copy'; }
+    setTimeout(() => copy.textContent = 'Copy', 1600);
   });
 })();
 </script>

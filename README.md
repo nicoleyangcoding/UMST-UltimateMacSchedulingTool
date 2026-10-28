@@ -126,7 +126,7 @@ Resources/      Info.plist and entitlements
 scripts/        Build, test, install and release scripts
 ```
 
-Issues and pull requests are welcome; see [CONTRIBUTING.md](CONTRIBUTING.md).
+Issues and pull requests are welcome; see [CONTRIBUTING.md](CONTRIBUTING.md) and the [roadmap](ROADMAP.md).
 
 ## Contributors
 
@@ -139,7 +139,7 @@ Issues and pull requests are welcome; see [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## License
 
-[MIT](LICENSE). UMST is provided "as is", without warranty of any kind.
+[MIT](LICENSE). UMST is provided "as is", without warranty of any kind. Always double-check important deadlines in the original source. Full [terms and disclaimer](https://nicoleyangcoding.github.io/UMST-UltimateMacSchedulingTool/legal.html).
 
 ## Trademarks
 
