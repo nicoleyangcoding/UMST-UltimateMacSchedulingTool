@@ -19,7 +19,9 @@ UMST connects **only** to the services you add yourself (for example your school
 
 UMST does not send your data to the developer or to any third party, and contains no ads, analytics, crash reporting or tracking.
 
-The installer downloads the app from GitHub, whose [privacy statement](https://docs.github.com/site-policy/privacy-policies/github-general-privacy-statement) covers that download. The project website is hosted on GitHub Pages, uses no cookies or analytics, and loads no third-party fonts or scripts.
+The installer downloads UMST, and Show Desktop by @stanczykwyatt unless you opt out, from GitHub, whose [privacy statement](https://docs.github.com/site-policy/privacy-policies/github-general-privacy-statement) covers that download. The project website is hosted on GitHub Pages, uses no cookies or analytics, and loads no third-party fonts or scripts.
+
+Show Desktop is a separate app with its own [privacy and security notes](https://github.com/stanczykwyatt/show-desktop#readme). It runs in the macOS sandbox with no network access.
 
 ## Your control
 

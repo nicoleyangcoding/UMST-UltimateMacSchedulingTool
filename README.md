@@ -4,6 +4,11 @@
 
 **A free, open-source desktop calendar for macOS.** See Google Calendar, iCloud, Outlook, Apple Reminders, Canvas, Blackboard, Brightspace, Moodle, Schoology, Todoist, Asana and Trello in one glass widget on your desktop, and add to-dos from the menu bar in two keystrokes.
 
+<table><tr><td>
+<a href="https://github.com/stanczykwyatt/show-desktop"><img src="docs/images/show-desktop-icon.png" width="48" align="left" alt="Show Desktop icon"></a>
+<b>Comes with <a href="https://github.com/stanczykwyatt/show-desktop">Show Desktop</a> by <a href="https://github.com/stanczykwyatt">@stanczykwyatt</a>.</b> A calendar on your desktop only helps if you can see your desktop. Click Show Desktop's menu bar icon (or press <kbd>⌃⇧D</kbd>) and every window gets out of the way. Click again and they all come back exactly where they were. It's free and open source too, so <a href="https://github.com/stanczykwyatt/show-desktop">give it a star</a> if it saves you time.
+</td></tr></table>
+
 ![UMST desktop calendar in Glass, Midnight, Sunset and Lavender themes](docs/images/themes.png)
 
 [![macOS 14+](https://img.shields.io/badge/macOS-14%2B-black?logo=apple)](#requirements)
@@ -19,12 +24,18 @@ Paste this into Terminal:
 curl -fsSL https://raw.githubusercontent.com/nicoleyangcoding/UMST-UltimateMacSchedulingTool/main/install.sh | zsh
 ```
 
-It downloads the latest release, checks its SHA-256 checksum, installs `UMST.app` to `~/Applications` and opens it. Run the same command again to update.
+It downloads the latest release, checks its SHA-256 checksum, installs `UMST.app` to `~/Applications` and opens it. It also installs [Show Desktop](https://github.com/stanczykwyatt/show-desktop) from its own GitHub releases. Run the same command again to update both.
+
+To install UMST without Show Desktop:
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/nicoleyangcoding/UMST-UltimateMacSchedulingTool/main/install.sh | SHOW_DESKTOP=0 zsh
+```
 
 <details>
 <summary>Other ways to install</summary>
 
-**Download.** Get `UMST.zip` from the [latest release](https://github.com/nicoleyangcoding/UMST-UltimateMacSchedulingTool/releases/latest), unzip it and move `UMST.app` to Applications. UMST isn't notarized by Apple yet, so the first time you open it macOS will block it: go to **System Settings → Privacy & Security** and click **Open Anyway**.
+**Download.** Get `UMST.zip` from the [latest release](https://github.com/nicoleyangcoding/UMST-UltimateMacSchedulingTool/releases/latest), unzip it and move `UMST.app` to Applications. Get Show Desktop the same way from [its releases](https://github.com/stanczykwyatt/show-desktop/releases/latest). UMST isn't notarized by Apple yet, so the first time you open it macOS will block it: go to **System Settings → Privacy & Security** and click **Open Anyway**.
 
 **Build from source.** Requires the Xcode Command Line Tools (`xcode-select --install`).
 
@@ -107,7 +118,7 @@ Details are in [PRIVACY.md](PRIVACY.md) and [SECURITY.md](SECURITY.md).
 curl -fsSL https://raw.githubusercontent.com/nicoleyangcoding/UMST-UltimateMacSchedulingTool/main/scripts/uninstall.sh | zsh
 ```
 
-This removes the app, its settings, its data and its Keychain items.
+This removes the app, its settings, its data and its Keychain items. Show Desktop is a separate app and stays installed; to remove it, right-click its menu bar icon, quit it and move it to the Trash.
 
 ## Development
 
@@ -133,13 +144,15 @@ Issues and pull requests are welcome; see [CONTRIBUTING.md](CONTRIBUTING.md) and
 <table>
   <tr>
     <td align="center"><a href="https://github.com/nicoleyangcoding"><img src="https://github.com/nicoleyangcoding.png?size=100" width="80" alt=""><br><sub><b>Nicole Yang</b></sub></a><br><sub>Creator</sub></td>
-    <td align="center"><a href="https://github.com/stanczykwyatt"><img src="https://github.com/stanczykwyatt.png?size=100" width="80" alt=""><br><sub><b>stanczykwyatt</b></sub></a><br><sub>Collaborator</sub></td>
+    <td align="center"><a href="https://github.com/stanczykwyatt"><img src="https://github.com/stanczykwyatt.png?size=100" width="80" alt=""><br><sub><b>stanczykwyatt</b></sub></a><br><sub>Collaborator · <a href="https://github.com/stanczykwyatt/show-desktop">Show Desktop</a></sub></td>
   </tr>
 </table>
 
 ## License
 
 [MIT](LICENSE). UMST is provided "as is", without warranty of any kind. Always double-check important deadlines in the original source. Full [terms and disclaimer](https://nicoleyangcoding.github.io/UMST-UltimateMacSchedulingTool/legal.html).
+
+[Show Desktop](https://github.com/stanczykwyatt/show-desktop) is a separate app by [@stanczykwyatt](https://github.com/stanczykwyatt), released under its own MIT license. The installer downloads it, unmodified, from its official GitHub releases.
 
 ## Trademarks
 

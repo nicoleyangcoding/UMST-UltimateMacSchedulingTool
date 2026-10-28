@@ -12,3 +12,4 @@ defaults delete com.umst.app 2>/dev/null
 defaults delete com.umst.app.demo 2>/dev/null
 while security delete-generic-password -s com.umst.app.sources >/dev/null 2>&1; do :; done
 echo "UMST has been removed."
+[[ -d "$HOME/Applications/Show Desktop.app" || -d "/Applications/Show Desktop.app" ]] && echo "Show Desktop is a separate app and is still installed. To remove it, quit it from its menu bar icon and move it to the Trash."

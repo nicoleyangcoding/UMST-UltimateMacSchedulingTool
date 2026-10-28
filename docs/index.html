@@ -152,6 +152,13 @@ h2 { font-size: clamp(24px, 3vw, 32px); letter-spacing: -.02em; line-height: 1.1
 .why h3 { font-size: 17px; margin-bottom: 4px; }
 .why p { color: var(--muted); font-size: 15px; }
 
+.bundle { display: flex; gap: 18px; align-items: center; margin-top: 8px; padding: 18px 20px; border-radius: 14px; background: var(--surface); border: 1px solid var(--line); }
+.bundle img { width: 56px; height: 56px; flex: none; }
+.bundle h2 { font-size: 20px; margin-bottom: 4px; }
+.bundle p { color: var(--muted); font-size: 15px; }
+.bundle .btn { flex: none; }
+@media (max-width: 760px) { .bundle { flex-wrap: wrap; } }
+
 .install .term { display: flex; align-items: center; gap: 10px; margin-top: 20px; padding: 10px 10px 10px 16px; border-radius: 12px; background: #1c1b1f; color: #e8e6ef;
   font: 13px/1.4 ui-monospace, "SF Mono", Menlo, monospace; }
 .term code { flex: 1; overflow-x: auto; white-space: nowrap; scrollbar-width: none; }
@@ -232,6 +239,18 @@ footer .legal { margin-top: 12px; font-size: 12px; max-width: 72em; }
     </div>
 
     <section>
+      <div class="bundle">
+        <img src="images/show-desktop-icon.png" alt="Show Desktop icon" width="56" height="56">
+        <div>
+          <h2>Comes with Show Desktop</h2>
+          <p>Too many windows on top of your calendar? Click Show Desktop's menu bar icon or press ⌃⇧D and they all get out of the way. Click again and they come back. Made by <a href="https://github.com/stanczykwyatt">@stanczykwyatt</a>, free and open source.</p>
+        </div>
+        <a class="btn" href="https://github.com/stanczykwyatt/show-desktop">
+          <svg viewBox="0 0 24 24" fill="#e3b341"><path d="M12 2.5l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.4l-5.9 3.1 1.2-6.5L2.5 9.4l6.6-.9z"/></svg>Star Show Desktop</a>
+      </div>
+    </section>
+
+    <section>
       <h2>Works with what you already use</h2>
       <p class="sub">Accounts on your Mac show up automatically. Everything else is a copy-paste link, and UMST tells you exactly where to find it.</p>
       <div class="works">
@@ -251,7 +270,7 @@ footer .legal { margin-top: 12px; font-size: 12px; max-width: 72em; }
 
     <section class="install" id="install">
       <h2>Install in one line</h2>
-      <p class="sub">Paste this into Terminal. It downloads the latest release, checks it and opens UMST.</p>
+      <p class="sub">Paste this into Terminal. It downloads the latest release, checks it and opens UMST and Show Desktop.</p>
       <div class="term">
         <code id="cmd">curl -fsSL https://raw.githubusercontent.com/nicoleyangcoding/UMST-UltimateMacSchedulingTool/main/install.sh | zsh</code>
         <button class="btn" id="copy" type="button">Copy</button>
@@ -269,6 +288,7 @@ footer .legal { margin-top: 12px; font-size: 12px; max-width: 72em; }
         <details><summary>Is it really free?</summary><p>Yes. No paid tier, no subscription, no account. The code is open source under the MIT license.</p></details>
         <details><summary>How do I get Canvas deadlines on my desktop?</summary><p>In Canvas open Calendar → Calendar Feed and copy the link. In UMST pick Connect a Service → Canvas and paste it.</p></details>
         <details><summary>Does it work with Google Calendar and Gmail?</summary><p>Yes. Add your Google account in System Settings → Internet Accounts with Calendars on, and it shows up, invites from Gmail included.</p></details>
+        <details><summary>What's Show Desktop?</summary><p>A separate menu bar app by <a href="https://github.com/stanczykwyatt">@stanczykwyatt</a> that hides every window in one click so you can see your desktop, and your calendar. The install command adds it. To skip it, put <code>SHOW_DESKTOP=0</code> before <code>zsh</code> in the command.</p></details>
         <details><summary>macOS says it's from an unidentified developer?</summary><p>UMST isn't notarized by Apple yet. The install command handles it. If you download the .zip, open System Settings → Privacy &amp; Security → Open Anyway once.</p></details>
       </div>
     </section>
